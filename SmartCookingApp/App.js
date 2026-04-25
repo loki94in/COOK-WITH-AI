@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, StatusBar, SafeAreaView, TouchableOpacity } from 'react-native';
 import { COLORS, SPACING } from './src/theme';
+import { initDatabase } from './src/services/database';
 
 export default function App() {
+  useEffect(() => {
+    try {
+      initDatabase();
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+    }
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
