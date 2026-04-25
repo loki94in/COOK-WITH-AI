@@ -6,6 +6,8 @@ import { useStore } from './src/store/useStore';
 import { useCooking } from './src/hooks/useCooking';
 import { extractRecipeFromUrl } from './src/services/youtubeApi';
 import PantryScreen from './src/screens/PantryScreen';
+import NutritionScreen from './src/screens/NutritionScreen';
+import TimersScreen from './src/screens/TimersScreen';
 import Toast from 'react-native-toast-message';
 import { Image } from 'expo-image';
 
@@ -59,6 +61,24 @@ export default function App() {
     );
   }
 
+  if (currentScreen === 'nutrition') {
+    return (
+      <>
+        <NutritionScreen onBack={() => setCurrentScreen('home')} />
+        <Toast />
+      </>
+    );
+  }
+
+  if (currentScreen === 'timers') {
+    return (
+      <>
+        <TimersScreen onBack={() => setCurrentScreen('home')} />
+        <Toast />
+      </>
+    );
+  }
+
   if (!isCooking) {
     return (
       <SafeAreaView style={styles.container}>
@@ -78,6 +98,21 @@ export default function App() {
           >
             <Text style={styles.buttonText}>MANAGE PANTRY</Text>
           </TouchableOpacity>
+
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
+            <TouchableOpacity 
+              style={[styles.button, { flex: 1 }]} 
+              onPress={() => setCurrentScreen('timers')}
+            >
+              <Text style={styles.buttonText}>TIMERS</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, { flex: 1 }]} 
+              onPress={() => setCurrentScreen('nutrition')}
+            >
+              <Text style={styles.buttonText}>NUTRITION</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <Toast />
       </SafeAreaView>
