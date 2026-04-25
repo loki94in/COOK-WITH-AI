@@ -247,69 +247,57 @@
             <div class="card">
                 <h2>Quick Extract</h2>
                 <div style="display: flex; gap: 10px;">
-                    <input type="url" placeholder="Paste any YouTube cooking video URL here...">
-                    <button class="btn btn-primary" onclick="showScreen('extraction')">Extract</button>
+                    <input type="url" id="extract-url" placeholder="Paste any YouTube cooking video URL here...">
+                    <button class="btn btn-primary" id="extract-btn">Extract</button>
                 </div>
             </div>
 
             <h2>Recent Recipes</h2>
-            <div class="grid">
-                <div class="card">
-                    <div style="background:#444; height:150px; border-radius:8px; margin-bottom:10px;"></div>
-                    <h3>Chicken Biryani</h3>
-                    <p style="color:var(--text-secondary); font-size:0.9rem;">Sanjay Kapoor • 45 mins • 8 steps</p>
-                    <button class="btn btn-outline" style="margin-top:15px; width:100%;">View Recipe</button>
-                </div>
-                <div class="card">
-                    <div style="background:#444; height:150px; border-radius:8px; margin-bottom:10px;"></div>
-                    <h3>Dal Makhani</h3>
-                    <p style="color:var(--text-secondary); font-size:0.9rem;">Your Recipe • 30 mins • 6 steps</p>
-                    <button class="btn btn-outline" style="margin-top:15px; width:100%;">View Recipe</button>
-                </div>
+            <div class="grid" id="recent-recipes-grid">
+                <!-- Dynamically populated -->
             </div>
         </div>
 
         <!-- SCREEN: EXTRACTION PROGRESS -->
         <div id="extraction" class="screen">
-            <h1>Extracting Recipe...</h1>
+            <h1 id="extraction-status">Extracting Recipe...</h1>
             <div class="card">
-                <p style="margin-bottom: 20px;">Analyzing YouTube Video: <em>"Authentic Hyderabadi Biryani"</em></p>
+                <p id="extraction-video-title" style="margin-bottom: 20px;">Analyzing YouTube Video...</p>
                 <div style="background: #333; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden;">
-                    <div style="background: var(--primary-color); width: 75%; height: 100%;"></div>
+                    <div id="extraction-progress-bar" style="background: var(--primary-color); width: 0%; height: 100%; transition: width 0.5s;"></div>
                 </div>
-                <table>
+                <table id="extraction-stats-table">
                     <tr><th>Status</th><th>Confidence</th></tr>
-                    <tr><td>Ingredients detected (24)</td><td style="color:var(--accent-success)">98%</td></tr>
-                    <tr><td>Steps extracted (8)</td><td style="color:var(--accent-success)">100%</td></tr>
-                    <tr><td>Cross-referencing similar recipes...</td><td>Running...</td></tr>
+                    <tbody id="extraction-stats-body">
+                        <!-- Dynamically populated -->
+                    </tbody>
                 </table>
-                <button class="btn btn-primary" style="margin-top:20px;" onclick="showScreen('cooking')">Go to Cooking Mode</button>
+                <button class="btn btn-primary" id="start-cooking-btn" style="margin-top:20px; display:none;">Go to Cooking Mode</button>
             </div>
         </div>
 
         <!-- SCREEN: COOKING MODE -->
         <div id="cooking" class="screen">
             <div class="cooking-mode-container">
-                <p style="color:var(--text-secondary); font-weight: bold; margin-bottom: 10px;">STEP 3 OF 8</p>
-                <div class="large-instruction">
-                    "Layer the rice over the marinated chicken evenly"
+                <p id="step-counter" style="color:var(--text-secondary); font-weight: bold; margin-bottom: 10px;">SELECT A RECIPE</p>
+                <div class="large-instruction" id="instruction-text">
+                    "Please extract a recipe first to begin."
                 </div>
 
                 <div class="timer-circle">
                     <span style="color:var(--text-secondary); font-size: 0.9rem;">Timer</span>
-                    <div class="timer-val">08:45</div>
-                    <button class="btn btn-outline" style="padding: 5px 15px; font-size: 0.8rem;">PAUSE</button>
+                    <div class="timer-val" id="timer-display">--:--</div>
+                    <button class="btn btn-outline" id="timer-toggle-btn" style="padding: 5px 15px; font-size: 0.8rem;">START</button>
                 </div>
 
                 <div class="voice-bar">
                     <span>🎤</span>
-                    <span>"Hey Chef" — Listening...</span>
-                    <span style="color:var(--text-secondary); font-size: 0.8rem; font-weight: normal;">Try: "Next step" or "Repeat"</span>
+                    <span id="voice-status">"Hey Chef" — Listening...</span>
                 </div>
 
                 <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
-                    <button class="btn btn-outline">PREVIOUS</button>
-                    <button class="btn btn-primary">NEXT STEP</button>
+                    <button class="btn btn-outline" id="prev-step-btn">PREVIOUS</button>
+                    <button class="btn btn-primary" id="next-step-btn">NEXT STEP</button>
                 </div>
             </div>
         </div>
@@ -320,98 +308,237 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h2>Inventory</h2>
-                    <button class="btn btn-primary">+ Add Item</button>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="pantry-input-name" placeholder="Name" style="margin-bottom:0; width:150px;">
+                        <input type="text" id="pantry-input-qty" placeholder="Qty" style="margin-bottom:0; width:80px;">
+                        <button class="btn btn-primary" id="add-pantry-btn">+ Add</button>
+                    </div>
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Item</th><th>Category</th><th>Qty</th><th>Status</th></tr>
+                        <tr><th>Item</th><th>Qty</th><th>Status</th><th>Action</th></tr>
                     </thead>
-                    <tbody>
-                        <tr><td>Basmati Rice</td><td>Grains</td><td>2kg</td><td><span style="color:var(--accent-success)">In Stock</span></td></tr>
-                        <tr><td>Chicken</td><td>Meat</td><td>0kg</td><td><span style="color:var(--accent-error)">Missing</span></td></tr>
-                        <tr><td>Yogurt</td><td>Dairy</td><td>200ml</td><td><span style="color:var(--secondary-color)">Low</span></td></tr>
-                        <tr><td>Turmeric</td><td>Spices</td><td>100g</td><td><span style="color:var(--accent-success)">In Stock</span></td></tr>
+                    <tbody id="pantry-table-body">
+                        <!-- Dynamically populated -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- SCREEN: NUTRITION -->
-        <div id="nutrition" class="screen">
-            <h1>Nutrition Tracker</h1>
-            <div class="grid">
-                <div class="card" style="text-align: center;">
-                    <h2>Daily Calories</h2>
-                    <div style="font-size: 3rem; font-weight: bold; color: var(--primary-color); margin: 20px 0;">1,750</div>
-                    <p style="color: var(--text-secondary);">Goal: 2,000 cal</p>
-                    <div style="background: #333; height: 8px; border-radius: 4px; margin-top: 15px;">
-                        <div style="background: var(--primary-color); width: 85%; height: 100%;"></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <h2>Macros Breakdown</h2>
-                    <p style="margin: 10px 0;">Protein: 65g (32%)</p>
-                    <div style="background: #333; height: 5px;"><div style="background: var(--accent-success); width: 32%; height: 100%;"></div></div>
-                    <p style="margin: 10px 0;">Carbs: 210g (52%)</p>
-                    <div style="background: #333; height: 5px;"><div style="background: var(--secondary-color); width: 52%; height: 100%;"></div></div>
-                    <p style="margin: 10px 0;">Fat: 45g (16%)</p>
-                    <div style="background: #333; height: 5px;"><div style="background: var(--accent-error); width: 16%; height: 100%;"></div></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SCREEN: SETTINGS -->
-        <div id="settings" class="screen">
-            <h1>Settings</h1>
-            <div class="card">
-                <h2>Preferences</h2>
-                <label>Dietary Mode</label>
-                <select>
-                    <option>Non-Vegetarian</option>
-                    <option>Vegetarian</option>
-                    <option>Jain</option>
-                </select>
-                
-                <label>Wake Word</label>
-                <select>
-                    <option>Hey Chef</option>
-                    <option>OK Chef</option>
-                </select>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
-                    <span>Offline Mode</span>
-                    <input type="checkbox" checked>
-                </div>
-            </div>
-            <button class="btn btn-primary">Save Changes</button>
-        </div>
+        <!-- SCREEN: NUTRITION & SETTINGS -->
+        <div id="nutrition" class="screen"><h1>Nutrition Tracker</h1><div class="card"><p>Daily Summary coming soon...</p></div></div>
+        <div id="settings" class="screen"><h1>Settings</h1><div class="card"><p>Preferences coming soon...</p></div></div>
 
     </main>
 
     <script>
         /* 
            ========================================
-           NAVIGATIONAL LOGIC
+           1. APP STATE & INITIALIZATION
            ========================================
         */
-        function showScreen(screenId) {
-            // Hide all screens
-            const screens = document.querySelectorAll('.screen');
-            screens.forEach(s => s.classList.remove('active'));
+        const appState = {
+            activeRecipe: null,
+            currentStepIndex: 0,
+            pantry: JSON.parse(localStorage.getItem('pantry')) || [
+                { id: 1, name: 'Basmati Rice', qty: '2kg', status: 'In Stock' },
+                { id: 2, name: 'Chicken', qty: '0kg', status: 'Missing' }
+            ],
+            timer: {
+                value: 0,
+                isRunning: false,
+                interval: null
+            }
+        };
 
-            // Show selected screen
-            const target = document.getElementById(screenId);
-            if(target) target.classList.add('active');
+        function init() {
+            renderPantry();
+            renderRecentRecipes();
+            setupEventListeners();
+        }
 
-            // Update nav styles
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.classList.remove('active');
-                if(item.textContent.toLowerCase().includes(screenId)) {
-                    item.classList.add('active');
+        /* 
+           ========================================
+           2. CORE FUNCTIONS
+           ========================================
+        */
+
+        async function extractRecipe() {
+            const url = document.getElementById('extract-url').value;
+            if (!url) return alert('Please enter a valid YouTube URL');
+
+            showScreen('extraction');
+            const statusText = document.getElementById('extraction-status');
+            const progressBar = document.getElementById('extraction-progress-bar');
+            const statsBody = document.getElementById('extraction-stats-body');
+            const startBtn = document.getElementById('start-cooking-btn');
+
+            statsBody.innerHTML = "";
+            try {
+                statusText.innerText = "Connecting to YouTube...";
+                progressBar.style.width = "20%";
+                await delay(1000);
+
+                statusText.innerText = "Parsing Metadata...";
+                progressBar.style.width = "50%";
+                statsBody.innerHTML += `<tr><td>Ingredients detected (12)</td><td style="color:var(--accent-success)">95%</td></tr>`;
+                await delay(1500);
+
+                statusText.innerText = "Finalizing Recipe...";
+                progressBar.style.width = "100%";
+                statsBody.innerHTML += `<tr><td>Steps verified (6)</td><td style="color:var(--accent-success)">100%</td></tr>`;
+                
+                appState.activeRecipe = {
+                    title: "Mock Chicken Biryani",
+                    steps: [
+                        { text: "Wash 2 cups of Basmati rice", timer: 300 },
+                        { text: "Marinate chicken with yogurt and spices", timer: 1800 },
+                        { text: "Cook onions until golden brown", timer: 600 },
+                        { text: "Layer rice and chicken in the pot", timer: 0 },
+                        { text: "Cook on low flame (Dum) for 20 minutes", timer: 1200 },
+                        { text: "Garnish with coriander and serve", timer: 0 }
+                    ]
+                };
+
+                startBtn.style.display = 'block';
+            } catch (error) {
+                statusText.innerText = "Extraction Failed!";
+            }
+        }
+
+        function updateCookingUI() {
+            const recipe = appState.activeRecipe;
+            if (!recipe) return;
+
+            const step = recipe.steps[appState.currentStepIndex];
+            document.getElementById('step-counter').innerText = `STEP ${appState.currentStepIndex + 1} OF ${recipe.steps.length}`;
+            document.getElementById('instruction-text').innerText = `"${step.text}"`;
+            resetTimer(step.timer);
+        }
+
+        function addPantryItem() {
+            const name = document.getElementById('pantry-input-name').value;
+            const qty = document.getElementById('pantry-input-qty').value;
+            if (!name || !qty) return alert('Fill both fields');
+
+            const newItem = { id: Date.now(), name, qty, status: 'In Stock' };
+            appState.pantry.push(newItem);
+            savePantry();
+            renderPantry();
+            document.getElementById('pantry-input-name').value = '';
+            document.getElementById('pantry-input-qty').value = '';
+        }
+
+        function deletePantryItem(id) {
+            appState.pantry = appState.pantry.filter(item => item.id !== id);
+            savePantry();
+            renderPantry();
+        }
+
+        /* 
+           ========================================
+           3. RENDERING & EVENT LISTENERS
+           ========================================
+        */
+        function renderPantry() {
+            const body = document.getElementById('pantry-table-body');
+            body.innerHTML = appState.pantry.map(item => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td><span style="color:${item.status === 'In Stock' ? 'var(--accent-success)' : 'var(--accent-error)'}">${item.status}</span></td>
+                    <td><button class="btn btn-outline" style="padding:2px 8px;" onclick="deletePantryItem(${item.id})">✕</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderRecentRecipes() {
+            const grid = document.getElementById('recent-recipes-grid');
+            grid.innerHTML = `
+                <div class="card">
+                    <div style="background:#444; height:150px; border-radius:8px; margin-bottom:10px;"></div>
+                    <h3>Chicken Biryani</h3>
+                    <button class="btn btn-outline" style="margin-top:15px; width:100%;" onclick="startMockCooking()">Start Cooking</button>
+                </div>
+            `;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('extract-btn').addEventListener('click', extractRecipe);
+            document.getElementById('start-cooking-btn').addEventListener('click', () => {
+                showScreen('cooking');
+                updateCookingUI();
+            });
+            document.getElementById('next-step-btn').addEventListener('click', () => {
+                if (appState.currentStepIndex < appState.activeRecipe.steps.length - 1) {
+                    appState.currentStepIndex++;
+                    updateCookingUI();
                 }
             });
+            document.getElementById('prev-step-btn').addEventListener('click', () => {
+                if (appState.currentStepIndex > 0) {
+                    appState.currentStepIndex--;
+                    updateCookingUI();
+                }
+            });
+            document.getElementById('add-pantry-btn').addEventListener('click', addPantryItem);
+            document.getElementById('timer-toggle-btn').addEventListener('click', toggleTimer);
         }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if(item.textContent.toLowerCase().includes(screenId)) item.classList.add('active');
+            });
+        }
+
+        function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
+        function savePantry() { localStorage.setItem('pantry', JSON.stringify(appState.pantry)); }
+        function startMockCooking() {
+            appState.activeRecipe = { title: "Chicken Biryani", steps: [{ text: "Wash 2 cups rice", timer: 300 }, { text: "Fry onions", timer: 600 }] };
+            appState.currentStepIndex = 0;
+            showScreen('cooking');
+            updateCookingUI();
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-toggle-btn');
+            if (appState.timer.isRunning) {
+                clearInterval(appState.timer.interval);
+                btn.innerText = "START";
+            } else {
+                appState.timer.interval = setInterval(() => {
+                    if (appState.timer.value > 0) {
+                        appState.timer.value--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(appState.timer.interval);
+                        alert("Step Complete!");
+                        btn.innerText = "START";
+                    }
+                }, 1000);
+                btn.innerText = "PAUSE";
+            }
+            appState.timer.isRunning = !appState.timer.isRunning;
+        }
+
+        function resetTimer(seconds) {
+            clearInterval(appState.timer.interval);
+            appState.timer.value = seconds;
+            appState.timer.isRunning = false;
+            document.getElementById('timer-toggle-btn').innerText = "START";
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(appState.timer.value / 60);
+            const secs = appState.timer.value % 60;
+            document.getElementById('timer-display').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        init();
     </script>
 </body>
 </html>
