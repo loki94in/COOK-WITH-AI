@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Cooking Assistant - Mockup</title>
+    <style>
+        /* 
+           ========================================
+           1. DESIGN SYSTEM & TOKENS
+           ========================================
+        */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #FF9800; /* Saffron */
+            --secondary-color: #FFC107;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --accent-success: #4CAF50;
+            --accent-error: #F44336;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 
+           ========================================
+           2. SIDEBAR NAVIGATION
+           ========================================
+        */
+        nav {
+            width: 240px;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            border-right: 1px solid #333;
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #333;
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+
+        /* 
+           ========================================
+           3. MAIN CONTENT AREA
+           ========================================
+        */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { margin-bottom: 20px; font-size: 1.8rem; }
+        h2 { margin: 20px 0 15px; color: var(--primary-color); font-size: 1.3rem; }
+
+        /* 
+           ========================================
+           4. SHARED COMPONENTS (Cards, Inputs, Buttons)
+           ========================================
+        */
+        .card {
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        input[type="text"], input[type="url"], select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: #000; }
+        .btn-primary:hover { background-color: var(--secondary-color); transform: scale(1.02); }
+
+        .btn-outline { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); }
+        .btn-outline:hover { background: rgba(255, 152, 0, 0.1); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+
+        th { color: var(--text-secondary); font-weight: normal; }
+
+        /* 
+           ========================================
+           5. SPECIFIC SCREEN STYLES
+           ========================================
+        */
+        /* Cooking Mode */
+        .cooking-mode-container {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-top: 40px;
+        }
+
+        .large-instruction {
+            font-size: 2.8rem;
+            font-weight: bold;
+            line-height: 1.2;
+            margin-bottom: 40px;
+        }
+
+        .timer-circle {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 40px;
+            box-shadow: 0 0 30px rgba(255, 152, 0, 0.2);
+        }
+
+        .timer-val { font-size: 3.5rem; font-weight: bold; color: var(--primary-color); }
+
+        .voice-bar {
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* Responsive Mobile Adjustments */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            nav { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; }
+            .logo { display: none; }
+            .nav-item { padding: 8px 15px; font-size: 0.9rem; white-space: nowrap; }
+            .large-instruction { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <nav>
+        <div class="logo">🧑‍🍳 Smart Chef</div>
+        <a class="nav-item active" onclick="showScreen('home')">🏠 Home</a>
+        <a class="nav-item" onclick="showScreen('extraction')">🔗 Extract</a>
+        <a class="nav-item" onclick="showScreen('cooking')">🔥 Cook Mode</a>
+        <a class="nav-item" onclick="showScreen('pantry')">📦 Pantry</a>
+        <a class="nav-item" onclick="showScreen('timers')">⏰ Timers</a>
+        <a class="nav-item" onclick="showScreen('nutrition')">📊 Nutrition</a>
+        <a class="nav-item" onclick="showScreen('settings')">⚙️ Settings</a>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main>
+
+        <!-- SCREEN: HOME / DASHBOARD -->
+        <div id="home" class="screen active">
+            <h1>Welcome back, Ramesh!</h1>
+            <div class="card">
+                <h2>Quick Extract</h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="url" placeholder="Paste any YouTube cooking video URL here...">
+                    <button class="btn btn-primary" onclick="showScreen('extraction')">Extract</button>
+                </div>
+            </div>
+
+            <h2>Recent Recipes</h2>
+            <div class="grid">
+                <div class="card">
+                    <div style="background:#444; height:150px; border-radius:8px; margin-bottom:10px;"></div>
+                    <h3>Chicken Biryani</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">Sanjay Kapoor • 45 mins • 8 steps</p>
+                    <button class="btn btn-outline" style="margin-top:15px; width:100%;">View Recipe</button>
+                </div>
+                <div class="card">
+                    <div style="background:#444; height:150px; border-radius:8px; margin-bottom:10px;"></div>
+                    <h3>Dal Makhani</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">Your Recipe • 30 mins • 6 steps</p>
+                    <button class="btn btn-outline" style="margin-top:15px; width:100%;">View Recipe</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: EXTRACTION PROGRESS -->
+        <div id="extraction" class="screen">
+            <h1>Extracting Recipe...</h1>
+            <div class="card">
+                <p style="margin-bottom: 20px;">Analyzing YouTube Video: <em>"Authentic Hyderabadi Biryani"</em></p>
+                <div style="background: #333; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden;">
+                    <div style="background: var(--primary-color); width: 75%; height: 100%;"></div>
+                </div>
+                <table>
+                    <tr><th>Status</th><th>Confidence</th></tr>
+                    <tr><td>Ingredients detected (24)</td><td style="color:var(--accent-success)">98%</td></tr>
+                    <tr><td>Steps extracted (8)</td><td style="color:var(--accent-success)">100%</td></tr>
+                    <tr><td>Cross-referencing similar recipes...</td><td>Running...</td></tr>
+                </table>
+                <button class="btn btn-primary" style="margin-top:20px;" onclick="showScreen('cooking')">Go to Cooking Mode</button>
+            </div>
+        </div>
+
+        <!-- SCREEN: COOKING MODE -->
+        <div id="cooking" class="screen">
+            <div class="cooking-mode-container">
+                <p style="color:var(--text-secondary); font-weight: bold; margin-bottom: 10px;">STEP 3 OF 8</p>
+                <div class="large-instruction">
+                    "Layer the rice over the marinated chicken evenly"
+                </div>
+
+                <div class="timer-circle">
+                    <span style="color:var(--text-secondary); font-size: 0.9rem;">Timer</span>
+                    <div class="timer-val">08:45</div>
+                    <button class="btn btn-outline" style="padding: 5px 15px; font-size: 0.8rem;">PAUSE</button>
+                </div>
+
+                <div class="voice-bar">
+                    <span>🎤</span>
+                    <span>"Hey Chef" — Listening...</span>
+                    <span style="color:var(--text-secondary); font-size: 0.8rem; font-weight: normal;">Try: "Next step" or "Repeat"</span>
+                </div>
+
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px;">
+                    <button class="btn btn-outline">PREVIOUS</button>
+                    <button class="btn btn-primary">NEXT STEP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: PANTRY MANAGER -->
+        <div id="pantry" class="screen">
+            <h1>My Pantry</h1>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2>Inventory</h2>
+                    <button class="btn btn-primary">+ Add Item</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Item</th><th>Category</th><th>Qty</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Basmati Rice</td><td>Grains</td><td>2kg</td><td><span style="color:var(--accent-success)">In Stock</span></td></tr>
+                        <tr><td>Chicken</td><td>Meat</td><td>0kg</td><td><span style="color:var(--accent-error)">Missing</span></td></tr>
+                        <tr><td>Yogurt</td><td>Dairy</td><td>200ml</td><td><span style="color:var(--secondary-color)">Low</span></td></tr>
+                        <tr><td>Turmeric</td><td>Spices</td><td>100g</td><td><span style="color:var(--accent-success)">In Stock</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SCREEN: NUTRITION -->
+        <div id="nutrition" class="screen">
+            <h1>Nutrition Tracker</h1>
+            <div class="grid">
+                <div class="card" style="text-align: center;">
+                    <h2>Daily Calories</h2>
+                    <div style="font-size: 3rem; font-weight: bold; color: var(--primary-color); margin: 20px 0;">1,750</div>
+                    <p style="color: var(--text-secondary);">Goal: 2,000 cal</p>
+                    <div style="background: #333; height: 8px; border-radius: 4px; margin-top: 15px;">
+                        <div style="background: var(--primary-color); width: 85%; height: 100%;"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Macros Breakdown</h2>
+                    <p style="margin: 10px 0;">Protein: 65g (32%)</p>
+                    <div style="background: #333; height: 5px;"><div style="background: var(--accent-success); width: 32%; height: 100%;"></div></div>
+                    <p style="margin: 10px 0;">Carbs: 210g (52%)</p>
+                    <div style="background: #333; height: 5px;"><div style="background: var(--secondary-color); width: 52%; height: 100%;"></div></div>
+                    <p style="margin: 10px 0;">Fat: 45g (16%)</p>
+                    <div style="background: #333; height: 5px;"><div style="background: var(--accent-error); width: 16%; height: 100%;"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: SETTINGS -->
+        <div id="settings" class="screen">
+            <h1>Settings</h1>
+            <div class="card">
+                <h2>Preferences</h2>
+                <label>Dietary Mode</label>
+                <select>
+                    <option>Non-Vegetarian</option>
+                    <option>Vegetarian</option>
+                    <option>Jain</option>
+                </select>
+                
+                <label>Wake Word</label>
+                <select>
+                    <option>Hey Chef</option>
+                    <option>OK Chef</option>
+                </select>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                    <span>Offline Mode</span>
+                    <input type="checkbox" checked>
+                </div>
+            </div>
+            <button class="btn btn-primary">Save Changes</button>
+        </div>
+
+    </main>
+
+    <script>
+        /* 
+           ========================================
+           NAVIGATIONAL LOGIC
+           ========================================
+        */
+        function showScreen(screenId) {
+            // Hide all screens
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+
+            // Show selected screen
+            const target = document.getElementById(screenId);
+            if(target) target.classList.add('active');
+
+            // Update nav styles
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if(item.textContent.toLowerCase().includes(screenId)) {
+                    item.classList.add('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
