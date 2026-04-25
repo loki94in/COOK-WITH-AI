@@ -1,33 +1,66 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View, StatusBar, SafeAreaView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, StatusBar, SafeAreaView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { COLORS, SPACING } from './src/theme';
 import { initDatabase } from './src/services/database';
+import { useStore } from './src/store/useStore';
+import { useCooking } from './src/hooks/useCooking';
+import { extractRecipeFromUrl } from './src/services/youtubeApi';
 
 export default function App() {
+  const [loading, setLoading] = useState(false);
+  const { activeRecipe, setActiveRecipe, isCooking } = useStore();
+  const { currentStep, stepNumber, totalSteps, handleVoiceCommand, isFirstStep, isLastStep } = useCooking();
+
   useEffect(() => {
-    try {
-      initDatabase();
-    } catch (error) {
-      console.error('Failed to initialize database:', error);
-    }
+    initDatabase();
   }, []);
+
+  // Function to handle mock extraction
+  const handleExtract = async () => {
+    setLoading(true);
+    try {
+      const recipe = await extractRecipeFromUrl('https://youtube.com/watch?v=mock');
+      setActiveRecipe(recipe);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isCooking) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.mainContent}>
+          <Text style={styles.instructionText}>Paste Recipe URL</Text>
+          <TouchableOpacity 
+            style={[styles.button, styles.primaryButton, { width: 200, marginTop: 20 }]} 
+            onPress={handleExtract}
+            disabled={loading}
+          >
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>EXTRACT MOCK RECIPE</Text>}
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       
       <View style={styles.header}>
-        <Text style={styles.recipeTitle}>CHICKEN BIRYANI</Text>
-        <Text style={styles.stepCounter}>STEP 3 OF 8</Text>
+        <Text style={styles.recipeTitle}>{activeRecipe.title.toUpperCase()}</Text>
+        <Text style={styles.stepCounter}>STEP {stepNumber} OF {totalSteps}</Text>
       </View>
 
       <View style={styles.mainContent}>
         <Text style={styles.instructionText}>
-          "Layer the rice over the marinated chicken evenly"
+          "{currentStep?.instruction}"
         </Text>
         
         <View style={styles.timerContainer}>
-          <Text style={styles.timerText}>08:45</Text>
+          <Text style={styles.timerText}>{currentStep?.timer > 0 ? `${Math.floor(currentStep.timer / 60)}:00` : '--:--'}</Text>
           <Text style={styles.timerLabel}>Remaining</Text>
         </View>
       </View>
@@ -41,13 +74,21 @@ export default function App() {
         </View>
 
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity 
+            style={[styles.button, isFirstStep && { opacity: 0.3 }]} 
+            onPress={() => handleVoiceCommand('previous')}
+            disabled={isFirstStep}
+          >
             <Text style={styles.buttonText}>PREVIOUS</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.primaryButton]}>
-            <Text style={styles.buttonText}>PAUSE</Text>
+          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => handleVoiceCommand('stop')}>
+            <Text style={styles.buttonText}>EXIT</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity 
+            style={[styles.button, isLastStep && { opacity: 0.3 }]} 
+            onPress={() => handleVoiceCommand('next')}
+            disabled={isLastStep}
+          >
             <Text style={styles.buttonText}>NEXT</Text>
           </TouchableOpacity>
         </View>
