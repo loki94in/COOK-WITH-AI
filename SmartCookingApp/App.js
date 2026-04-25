@@ -6,12 +6,27 @@ import { useStore } from './src/store/useStore';
 import { useCooking } from './src/hooks/useCooking';
 import { extractRecipeFromUrl } from './src/services/youtubeApi';
 import PantryScreen from './src/screens/PantryScreen';
+import Toast from 'react-native-toast-message';
+import { Image } from 'expo-image';
 
 export default function App() {
   const [loading, setLoading] = useState(false);
-  const [currentScreen, setCurrentScreen] = useState('home'); // 'home' or 'pantry'
-  const { activeRecipe, setActiveRecipe, isCooking } = useStore();
-  const { currentStep, stepNumber, totalSteps, handleVoiceCommand, isFirstStep, isLastStep } = useCooking();
+  const [currentScreen, setCurrentScreen] = useState('home');
+
+  // PERFORMANCE: Destructure only what is needed to avoid unnecessary re-renders
+  const activeRecipe = useStore(state => state.activeRecipe);
+  const isCooking = useStore(state => state.isCooking);
+  const setActiveRecipe = useStore(state => state.setActiveRecipe);
+  const exitCooking = useStore(state => state.exitCooking);
+
+  const { 
+    currentStep, 
+    stepNumber, 
+    totalSteps, 
+    handleVoiceCommand, 
+    isFirstStep, 
+    isLastStep 
+  } = cookingData;
 
   useEffect(() => {
     initDatabase();
@@ -23,6 +38,11 @@ export default function App() {
     try {
       const recipe = await extractRecipeFromUrl('https://youtube.com/watch?v=mock');
       setActiveRecipe(recipe);
+      Toast.show({
+        type: 'success',
+        text1: 'Recipe Ready!',
+        text2: 'Voice control is now active.',
+      });
     } catch (error) {
       Alert.alert('Error', error.message);
     } finally {
@@ -31,7 +51,12 @@ export default function App() {
   };
 
   if (currentScreen === 'pantry') {
-    return <PantryScreen onBack={() => setCurrentScreen('home')} />;
+    return (
+      <>
+        <PantryScreen onBack={() => setCurrentScreen('home')} />
+        <Toast />
+      </>
+    );
   }
 
   if (!isCooking) {
@@ -44,7 +69,7 @@ export default function App() {
             onPress={handleExtract}
             disabled={loading}
           >
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>EXTRACT MOCK RECIPE</Text>}
+            {loading ? <ActivityIndicator color="#000" /> : <Text style={[styles.buttonText, { color: '#000' }]}>EXTRACT MOCK RECIPE</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -54,6 +79,7 @@ export default function App() {
             <Text style={styles.buttonText}>MANAGE PANTRY</Text>
           </TouchableOpacity>
         </View>
+        <Toast />
       </SafeAreaView>
     );
   }
@@ -95,7 +121,7 @@ export default function App() {
             <Text style={styles.buttonText}>PREVIOUS</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => handleVoiceCommand('stop')}>
-            <Text style={styles.buttonText}>EXIT</Text>
+            <Text style={[styles.buttonText, { color: '#000' }]}>EXIT</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.button, isLastStep && { opacity: 0.3 }]} 
@@ -106,6 +132,7 @@ export default function App() {
           </TouchableOpacity>
         </View>
       </View>
+      <Toast />
     </SafeAreaView>
   );
 }

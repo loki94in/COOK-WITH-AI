@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { speakInstruction, stopSpeaking } from '../services/voiceHandler';
+import { speakInstruction, stopSpeaking, startListening, stopListening } from '../services/voiceHandler';
 
 /**
  * USE COOKING HOOK
@@ -25,6 +25,16 @@ export const useCooking = () => {
     }
   }, [currentStepIndex, activeRecipe]);
 
+  // Start continuous listening when cooking starts
+  useEffect(() => {
+    if (activeRecipe) {
+      startListening(handleVoiceCommand);
+    }
+    return () => {
+      stopListening();
+    };
+  }, [activeRecipe]);
+
   // Logic to handle voice commands (Mock implementation)
   const handleVoiceCommand = (command) => {
     try {
@@ -34,6 +44,8 @@ export const useCooking = () => {
         nextStep();
       } else if (cmd.includes('previous') || cmd.includes('back')) {
         prevStep();
+      } else if (cmd.includes('repeat')) {
+        speakInstruction(currentStep?.instruction);
       } else if (cmd.includes('exit') || cmd.includes('stop')) {
         exitCooking();
       } else {
