@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '../store/useStore';
+import { speakInstruction, stopSpeaking } from '../services/voiceHandler';
 
 /**
  * USE COOKING HOOK
@@ -15,6 +16,14 @@ export const useCooking = () => {
   } = useStore();
 
   const currentStep = activeRecipe?.steps[currentStepIndex];
+
+  // Automatically speak the instruction when the step changes
+  useEffect(() => {
+    if (currentStep) {
+      stopSpeaking();
+      speakInstruction(currentStep.instruction);
+    }
+  }, [currentStepIndex, activeRecipe]);
 
   // Logic to handle voice commands (Mock implementation)
   const handleVoiceCommand = (command) => {

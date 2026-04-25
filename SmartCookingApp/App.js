@@ -5,9 +5,11 @@ import { initDatabase } from './src/services/database';
 import { useStore } from './src/store/useStore';
 import { useCooking } from './src/hooks/useCooking';
 import { extractRecipeFromUrl } from './src/services/youtubeApi';
+import PantryScreen from './src/screens/PantryScreen';
 
 export default function App() {
   const [loading, setLoading] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('home'); // 'home' or 'pantry'
   const { activeRecipe, setActiveRecipe, isCooking } = useStore();
   const { currentStep, stepNumber, totalSteps, handleVoiceCommand, isFirstStep, isLastStep } = useCooking();
 
@@ -28,6 +30,10 @@ export default function App() {
     }
   };
 
+  if (currentScreen === 'pantry') {
+    return <PantryScreen onBack={() => setCurrentScreen('home')} />;
+  }
+
   if (!isCooking) {
     return (
       <SafeAreaView style={styles.container}>
@@ -39,6 +45,13 @@ export default function App() {
             disabled={loading}
           >
             {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>EXTRACT MOCK RECIPE</Text>}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.button, { width: 200, marginTop: 20 }]} 
+            onPress={() => setCurrentScreen('pantry')}
+          >
+            <Text style={styles.buttonText}>MANAGE PANTRY</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
