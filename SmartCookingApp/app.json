@@ -29,7 +29,8 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -38,6 +39,11 @@
     "plugins": [
       "expo-sqlite",
       "expo-speech-recognition"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "221c7acf-7d2d-44c1-92e3-2140e212772b"
+      }
+    }
   }
 }
