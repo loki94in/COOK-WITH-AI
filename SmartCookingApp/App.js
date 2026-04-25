@@ -8,12 +8,14 @@ import { extractRecipeFromUrl } from './src/services/youtubeApi';
 import PantryScreen from './src/screens/PantryScreen';
 import NutritionScreen from './src/screens/NutritionScreen';
 import TimersScreen from './src/screens/TimersScreen';
+import EmergencyFixScreen from './src/screens/EmergencyFixScreen';
 import Toast from 'react-native-toast-message';
 import { Image } from 'expo-image';
 
 export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('home');
+  const [mistakeType, setMistakeType] = useState(null);
 
   // PERFORMANCE: Destructure only what is needed to avoid unnecessary re-renders
   const activeRecipe = useStore(state => state.activeRecipe);
@@ -21,7 +23,12 @@ export default function App() {
   const setActiveRecipe = useStore(state => state.setActiveRecipe);
   const exitCooking = useStore(state => state.exitCooking);
 
-  const cookingData = useCooking();
+  const cookingData = useCooking((cmd) => {
+    if (cmd === 'salt_error') {
+      setMistakeType('too much salt');
+      setCurrentScreen('emergency');
+    }
+  });
   const { 
     currentStep, 
     stepNumber, 
@@ -75,6 +82,18 @@ export default function App() {
     return (
       <>
         <TimersScreen onBack={() => setCurrentScreen('home')} />
+        <Toast />
+      </>
+    );
+  }
+
+  if (currentScreen === 'emergency') {
+    return (
+      <>
+        <EmergencyFixScreen 
+          mistakeType={mistakeType} 
+          onBack={() => setCurrentScreen('home')} 
+        />
         <Toast />
       </>
     );
@@ -158,6 +177,9 @@ export default function App() {
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => handleVoiceCommand('stop')}>
             <Text style={[styles.buttonText, { color: '#000' }]}>EXIT</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.button, { backgroundColor: '#F44336' }]} onPress={() => handleVoiceCommand('salt')}>
+            <Text style={styles.buttonText}>SALT?</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.button, isLastStep && { opacity: 0.3 }]} 

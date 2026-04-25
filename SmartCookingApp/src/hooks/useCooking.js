@@ -6,7 +6,7 @@ import { speakInstruction, stopSpeaking, startListening, stopListening } from '.
  * USE COOKING HOOK
  * Coordinates voice commands, timers, and state during cooking.
  */
-export const useCooking = () => {
+export const useCooking = (onCommandCallback) => {
   const { 
     activeRecipe, 
     currentStepIndex, 
@@ -46,6 +46,8 @@ export const useCooking = () => {
         prevStep();
       } else if (cmd.includes('repeat')) {
         speakInstruction(currentStep?.instruction);
+      } else if (cmd.includes('salt')) {
+        onCommandCallback('salt_error');
       } else if (cmd.includes('exit') || cmd.includes('stop')) {
         exitCooking();
       } else {
