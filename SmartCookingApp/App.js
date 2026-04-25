@@ -21,6 +21,7 @@ export default function App() {
   const setActiveRecipe = useStore(state => state.setActiveRecipe);
   const exitCooking = useStore(state => state.exitCooking);
 
+  const cookingData = useCooking();
   const { 
     currentStep, 
     stepNumber, 
