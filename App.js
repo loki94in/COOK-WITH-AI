@@ -52,6 +52,7 @@ export default function App() {
 
     return (
       <CookingModeScreen 
+        setCurrentScreen={setCurrentScreen}
         onMistake={(type) => {
           setMistakeType(type);
           setCurrentScreen('emergency');

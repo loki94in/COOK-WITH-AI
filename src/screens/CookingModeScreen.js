@@ -4,7 +4,7 @@ import { COLORS, SPACING } from '../theme';
 import { useStore } from '../store/useStore';
 import { useCooking } from '../hooks/useCooking';
 
-export default function CookingModeScreen({ onMistake }) {
+export default function CookingModeScreen({ onMistake, setCurrentScreen }) {
   const activeRecipe = useStore(state => state.activeRecipe);
   const exitCooking = useStore(state => state.exitCooking);
 
@@ -27,6 +27,18 @@ export default function CookingModeScreen({ onMistake }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
       
+      <View style={styles.topNav}>
+        <TouchableOpacity onPress={() => setCurrentScreen('pantry')} style={styles.navLink}>
+          <Text style={styles.navText}>PANTRY</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setCurrentScreen('timers')} style={styles.navLink}>
+          <Text style={styles.navText}>TIMERS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setCurrentScreen('nutrition')} style={styles.navLink}>
+          <Text style={styles.navText}>NUTRITION</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.recipeTitle}>{activeRecipe?.title?.toUpperCase() || 'RECIPE'}</Text>
         <Text style={styles.stepCounter}>STEP {stepNumber} OF {totalSteps}</Text>
@@ -82,6 +94,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  topNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: SPACING.sm,
+    backgroundColor: '#111',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  navLink: {
+    padding: SPACING.sm,
+  },
+  navText: {
+    color: COLORS.primary,
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
   header: {
     padding: SPACING.md,

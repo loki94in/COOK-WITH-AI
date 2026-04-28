@@ -43,26 +43,49 @@ export const startListening = async (onCommandCallback) => {
       salt: ['salt', 'too much salt', 'salty', 'ruined']
     };
 
+    let isAwake = false;
+    let wakeTimeout = null;
+
     ExpoSpeechRecognition.addListener('result', (event) => {
       const transcript = event.results[0].transcript.toLowerCase().trim();
       console.log('Recognized:', transcript);
 
+      // 1. Wake Word Detection
+      if (transcript.includes('hey chef') || transcript.includes('chef')) {
+        console.log('🌟 WAKE WORD DETECTED: Listening for command...');
+        isAwake = true;
+        
+        // Stay awake for 5 seconds to receive the command
+        if (wakeTimeout) clearTimeout(wakeTimeout);
+        wakeTimeout = setTimeout(() => {
+          console.log('💤 Chef is going back to sleep.');
+          isAwake = false;
+        }, 5000);
+      }
+
+      // If we are not awake, ignore the transcription
+      if (!isAwake) {
+        return;
+      }
+
       let matchedCommand = null;
       
-      // 1. Exact or partial match check against aliases
+      // 2. Exact or partial match check against aliases
       for (const [cmd, aliases] of Object.entries(commandAliases)) {
-        if (aliases.some(alias => transcript.includes(alias) || alias.includes(transcript))) {
+        if (aliases.some(alias => transcript.includes(alias))) {
           matchedCommand = cmd;
           break;
         }
       }
 
-      // 2. Execute command if found
+      // 3. Execute command if found
       if (matchedCommand) {
         console.log(`Matched Voice Command: [${matchedCommand}] from transcript: "${transcript}"`);
         onCommandCallback(matchedCommand);
-      } else {
-        console.log(`No command matched for transcript: "${transcript}"`);
+        
+        // Go back to sleep immediately after executing a command to prevent double-triggers
+        isAwake = false;
+        if (wakeTimeout) clearTimeout(wakeTimeout);
       }
     });
 
