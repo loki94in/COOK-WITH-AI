@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Cooking Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-white: #FFFFFF;
+            --bg-light: #FFF8F0;
+            --bg-card: #FFFFFF;
+            --bg-elevated: #FFF3E6;
+            --primary: #FF6F00;
+            --primary-light: #FFB74D;
+            --primary-dark: #E65C00;
+            --secondary: #FFB300;
+            --text-primary: #1A1A1A;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #FFE8D6;
+            --border-strong: #FFB366;
+            --success: #4CAF50;
+            --warning: #F44336;
+            --shadow: rgba(255, 111, 0, 0.12);
+            --shadow-strong: rgba(255, 111, 0, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F5F5F5;
+            color: var(--text-primary);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .phone-frame {
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--bg-white);
+            position: relative;
+            box-shadow: 0 0 40px var(--shadow);
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-white);
+        }
+
+        .screen { display: none; padding-bottom: 90px; }
+        .screen.active { display: block; }
+
+        /* Header with Hamburger */
+        .header-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            gap: 16px;
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .hamburger-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .hamburger-btn:hover { 
+            border-color: var(--primary);
+            background: var(--bg-elevated);
+        }
+
+        .hamburger-btn span {
+            width: 18px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: all 0.2s;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        /* Side Drawer */
+        .side-drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .side-drawer-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-white);
+            z-index: 1001;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px var(--shadow-strong);
+        }
+
+        .side-drawer.active {
+            transform: translateX(0);
+        }
+
+        .drawer-header {
+            padding: 24px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .drawer-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: white;
+        }
+
+        .drawer-header p {
+            font-size: 13px;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .drawer-menu {
+            padding: 16px 0;
+        }
+
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            color: var(--text-primary);
+        }
+
+        .drawer-item:hover, .drawer-item.active {
+            background: var(--bg-light);
+            border-left-color: var(--primary);
+        }
+
+        .drawer-item i {
+            width: 24px;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .drawer-item:hover i, .drawer-item.active i {
+            color: var(--primary-dark);
+        }
+
+        .drawer-item span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .drawer-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 8px 20px;
+        }
+
+        .drawer-section-title {
+            padding: 12px 20px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .drawer-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.3);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-white);
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 28px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item i { font-size: 20px; }
+        .nav-item span { font-size: 10px; font-weight: 600; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item:hover { color: var(--primary); }
+
+        /* Home Screen */
+        .home-header {
+            padding: 24px 20px 16px;
+            background: linear-gradient(180deg, var(--bg-light) 0%, var(--bg-white) 100%);
+        }
+
+        .home-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .home-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .wake-btn {
+            margin: 20px;
+            width: calc(100% - 40px);
+            padding: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 32px var(--shadow-strong);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .wake-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px var(--shadow-strong);
+        }
+
+        .wake-btn i { font-size: 24px; }
+
+        .url-input-section {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input {
+            flex: 1;
+            padding: 14px 16px;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .url-input:focus { border-color: var(--primary); }
+        .url-input::placeholder { color: var(--text-muted); }
+
+        .url-submit-btn {
+            padding: 14px 20px;
+            background: var(--primary);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .url-submit-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .quick-actions {
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quick-action {
+            padding: 18px;
+            background: var(--bg-white);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .quick-action i {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .quick-action h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .quick-action p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .section-title {
+            padding: 0 20px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        /* Recipe Cards */
+        .recipe-card {
+            margin: 0 20px 16px;
+            background: var(--bg-white);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .recipe-card:hover { 
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .recipe-thumb {
+            height: 140px;
+            background: linear-gradient(135deg, var(--bg-elevated), var(--bg-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+        }
+
+        .recipe-thumb .duration {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: var(--primary);
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .recipe-info {
+            padding: 14px;
+        }
+
+        .recipe-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Cooking Mode Screen */
+        .cooking-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg-white);
+        }
+
+        .cooking-header h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+
+        .cooking-progress {
+            padding: 20px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-light);
+            border-radius: 999px;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 37%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 999px;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .step-card {
+            margin: 20px;
+            padding: 24px;
+            background: var(--bg-white);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .step-number {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .step-text {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .step-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .step-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .step-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .step-btn.secondary {
+            background: var(--bg-light);
+            color: var(--primary);
+            border: 2px solid var(--border);
+        }
+
+        .step-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .step-btn.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .step-btn.secondary:hover {
+            border-color: var(--primary);
+            background: var(--bg-elevated);
+        }
+
+        /* Preference Modal */
+        .pref-modal {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
+            width: 100%;
+            max-width: 420px;
+            max-height: 70vh;
+            background: var(--bg-white);
+            border-radius: 24px 24px 0 0;
+            z-index: 2000;
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+
+        .pref-modal.active { transform: translateX(-50%) translateY(0); }
+
+        .pref-modal::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 4px;
+            background: var(--border-strong);
+            border-radius: 2px;
+            margin: 12px auto 0;
+        }
+
+        .pref-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .pref-modal-header h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-light);
+            border: none;
+            border-radius: 50%;
+            color: var(--primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-elevated);
+        }
+
+        .pref-modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .pref-section {
+            margin-bottom: 24px;
+        }
+
+        .pref-section h4 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .pref-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pref-option:last-child { border-bottom: none; }
+        .pref-option span { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+
+        .toggle-switch {
+            width: 48px;
+            height: 26px;
+            background: var(--border);
+            border-radius: 999px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .toggle-switch.active { background: var(--primary); }
+        .toggle-switch.active::after { left: 25px; }
+
+        .pref-select {
+            padding: 8px 12px;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .pref-select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .dietary-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .dietary-chip {
+            padding: 10px 16px;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .dietary-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .dietary-chip.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .dietary-chip.active:hover {
+            background: var(--primary-dark);
+        }
+
+        .voice-fab {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px var(--shadow-strong);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 50;
+        }
+
+        .voice-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 28px var(--shadow-strong);
+        }
+
+        .voice-fab.listening {
+            background: linear-gradient(135deg, var(--warning), #d32f2f);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .bottom-nav {
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span><i class="fas fa-signal"></i> <i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></span>
+        </div>
+
+        <!-- Screen 1: Home -->
+        <div class="screen active" id="screen-home">
+            <div class="header-bar">
+                <div class="hamburger-btn" onclick="toggleDrawer()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="header-title">Smart Cooking</div>
+            </div>
+
+            <div class="home-header">
+                <h1>Hey, Chef! 👋</h1>
+                <p>What's cooking today?</p>
+            </div>
+
+            <button class="wake-btn" onclick="wakeChef()">
+                <i class="fas fa-microphone"></i> "Hey Chef"
+            </button>
+
+            <div class="url-input-section">
+                <div class="url-input-group">
+                    <input type="text" class="url-input" placeholder="Paste YouTube recipe URL..." onclick="copyToClipboard()">
+                    <button class="url-submit-btn" onclick="submitUrl()"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="quick-action" onclick="switchScreen('screen-pantry')">
+                    <i class="fas fa-carrot"></i>
+                    <h4>Cook with What I Have</h4>
+                    <p>Based on your pantry</p>
+                </div>
+                <div class="quick-action" onclick="switchScreen('screen-recipe')">
+                    <i class="fas fa-utensils"></i>
+                    <h4>Start Cooking</h4>
+                    <p>Step-by-step guide</p>
+                </div>
+                <div class="quick-action" onclick="switchScreen('screen-timers')">
+                    <i class="fas fa-stopwatch"></i>
+                    <h4>My Timers</h4>
+                    <p>3 active timers</p>
+                </div>
+                <div class="quick-action" onclick="switchScreen('screen-recipes')">
+                    <i class="fas fa-book"></i>
+                    <h4>Saved Recipes</h4>
+                    <p>Your collection</p>
+                </div>
+            </div>
+
+            <div class="section-title">Featured Recipe</div>
+            <div class="recipe-card" onclick="switchScreen('screen-recipe')">
+                <div class="recipe-thumb">
+                    🍗
+                    <span class="duration"><i class="fas fa-clock"></i> 18:45</span>
+                </div>
+                <div class="recipe-info">
+                    <h4>Hyderabadi Chicken Biryani</h4>
+                    <div class="recipe-meta">
+                        <span><i class="fas fa-fire"></i> Spicy</span>
+                        <span><i class="fas fa-clock"></i> 45 min</span>
+                        <span><i class="fas fa-fire"></i> 450 kcal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Quick Timers</div>
+            <div class="recipe-card">
+                <div class="recipe-info" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4>Rice 🍚</h4>
+                        <div class="recipe-meta"><span>Soaking • 12:45</span></div>
+                    </div>
+                    <button style="padding:8px 14px; background:var(--primary); border:none; border-radius:8px; color:white; font-size:12px; font-weight:600;">Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Cooking Mode -->
+        <div class="screen" id="screen-cooking">
+            <div class="cooking-header">
+                <i class="fas fa-arrow-left" onclick="switchScreen('screen-home')" style="cursor:pointer;"></i>
+                <h2>Hyderabadi Chicken Biryani</h2>
+            </div>
+
+            <div class="cooking-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="progress-text">Step 3 of 8 • 18:45 remaining</div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">STEP 3</div>
+                <div class="step-text">Add the marinated chicken to the rice. Gently mix without breaking the rice grains.</div>
+                <div class="step-actions">
+                    <button class="step-btn secondary" onclick="repeatStep()"><i class="fas fa-redo"></i> Repeat</button>
+                    <button class="step-btn primary" onclick="nextStep()"><i class="fas fa-arrow-right"></i> Next Step</button>
+                </div>
+            </div>
+
+            <div style="padding: 0 20px;">
+                <div class="section-title">Ingredients Used</div>
+                <div class="recipe-card" style="margin: 0 0 16px;">
+                    <div class="recipe-info">
+                        <div class="ingredient-item"><span class="emoji">🍗</span><span>500g Chicken (marinated)</span></div>
+                        <div class="ingredient-item"><span class="emoji">🍚</span><span>2 cups Basmati rice</span></div>
+                        <div class="ingredient-item"><span class="emoji">🧅</span><span>2 Onions (fried)</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="voice-fab" onclick="toggleVoice()"><i class="fas fa-microphone"></i></button>
+        </div>
+
+        <!-- Screen 3: Pantry -->
+        <div class="screen" id="screen-pantry">
+            <div class="header-bar">
+                <div class="hamburger-btn" onclick="toggleDrawer()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="header-title">My Pantry</div>
+            </div>
+
+            <div class="pantry-header">
+                <h2>My Pantry</h2>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search ingredients..." onclick="copyToClipboard()">
+                    <button class="add-btn" onclick="addToPantry()"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <div class="category-tabs">
+                <div class="category-tab active">All</div>
+                <div class="category-tab">Vegetables</div>
+                <div class="category-tab">Spices</div>
+                <div class="category-tab">Dairy</div>
+                <div class="category-tab">Grains</div>
+            </div>
+
+            <div class="pantry-grid">
+                <div class="pantry-card">
+                    <div class="emoji">🧅</div>
+                    <h4>Onions</h4>
+                    <span>5 pieces</span>
+                </div>
+                <div class="pantry-card">
+                    <div class="emoji">🍅</div>
+                    <h4>Tomatoes</h4>
+                    <span>3 pieces</span>
+                </div>
+                <div class="pantry-card">
+                    <div class="emoji">🧄</div>
+                    <h4>Garlic</h4>
+                    <span>8 cloves</span>
+                </div>
+                <div class="pantry-card">
+                    <div class="emoji">🥔</div>
+                    <h4>Potatoes</h4>
+                    <span>4 pieces</span>
+                </div>
+                <div class="pantry-card">
+                    <div class="emoji">🌶️</div>
+                    <h4>Green Chili</h4>
+                    <span>6 pieces</span>
+                </div>
+                <div class="pantry-card">
+                    <div class="emoji">🫚</div>
+                    <h4>Ginger</h4>
+                    <span>100g</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Timers -->
+        <div class="screen" id="screen-timers">
+            <div class="header-bar">
+                <div class="hamburger-btn" onclick="toggleDrawer()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="header-title">Timers</div>
+            </div>
+
+            <div class="timers-header">
+                <h2>Timers</h2>
+                <button class="add-timer-btn" onclick="addTimer()"><i class="fas fa-plus"></i></button>
+            </div>
+
+            <div class="timer-card">
+                <div class="timer-top">
+                    <h4>Rice 🍚</h4>
+                    <span>Soaking</span>
+                </div>
+                <div class="timer-display">
+                    <div class="time">12:45</div>
+                </div>
+                <div class="timer-btns">
+                    <button class="timer-btn secondary" onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
+                    <button class="timer-btn primary" onclick="pauseTimer()"><i class="fas fa-pause"></i> Pause</button>
+                </div>
+            </div>
+
+            <div class="timer-card">
+                <div class="timer-top">
+                    <h4>Dal 🫘</h4>
+                    <span>Cooking</span>
+                </div>
+                <div class="timer-display">
+                    <div class="time">08:30</div>
+                </div>
+                <div class="timer-btns">
+                    <button class="timer-btn secondary" onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
+                    <button class="timer-btn primary" onclick="pauseTimer()"><i class="fas fa-pause"></i> Pause</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Recipe Detail -->
+        <div class="screen" id="screen-recipe">
+            <div class="recipe-detail-header">
+                <div class="recipe-detail-thumb">🍗</div>
+                <button class="back-btn" onclick="switchScreen('screen-home')"><i class="fas fa-arrow-left"></i></button>
+            </div>
+
+            <div class="recipe-detail-content">
+                <h2 class="recipe-title">Hyderabadi Chicken Biryani</h2>
+                <div class="recipe-tags">
+                    <span class="recipe-tag">🍗 Non-Veg</span>
+                    <span class="recipe-tag">🌶️ Spicy</span>
+                    <span class="recipe-tag">⏱️ 45 min</span>
+                </div>
+
+                <div class="recipe-stats-row">
+                    <div class="recipe-stat">
+                        <div class="value">450</div>
+                        <div class="label">Calories</div>
+                    </div>
+                    <div class="recipe-stat">
+                        <div class="value">32g</div>
+                        <div class="label">Protein</div>
+                    </div>
+                    <div class="recipe-stat">
+                        <div class="value">48g</div>
+                        <div class="label">Carbs</div>
+                    </div>
+                    <div class="recipe-stat">
+                        <div class="value">18g</div>
+                        <div class="label">Fat</div>
+                    </div>
+                </div>
+
+                <div class="portion-selector">
+                    <h4>Portions</h4>
+                    <div class="portion-btns">
+                        <button class="portion-btn" onclick="selectPortion(2)">2</button>
+                        <button class="portion-btn active" onclick="selectPortion(4)">4</button>
+                        <button class="portion-btn" onclick="selectPortion(6)">6</button>
+                        <button class="portion-btn" onclick="selectPortion(8)">8</button>
+                    </div>
+                </div>
+
+                <div class="ingredients-list">
+                    <h4>Ingredients</h4>
+                    <div class="ingredient-item"><span class="emoji">🍗</span><span>500g Chicken</span></div>
+                    <div class="ingredient-item"><span class="emoji">🍚</span><span>2 cups Basmati rice</span></div>
+                    <div class="ingredient-item"><span class="emoji">🧅</span><span>2 Onions (sliced)</span></div>
+                    <div class="ingredient-item"><span class="emoji">🍅</span><span>2 Tomatoes</span></div>
+                    <div class="ingredient-item"><span class="emoji">🧄</span><span>8 Garlic cloves</span></div>
+                </div>
+
+                <button class="start-cooking-btn" onclick="switchScreen('screen-cooking')">
+                    <i class="fas fa-play"></i> Start Cooking
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 6: Recipes Library -->
+        <div class="screen" id="screen-recipes">
+            <div class="header-bar">
+                <div class="hamburger-btn" onclick="toggleDrawer()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="header-title">My Recipes</div>
+            </div>
+
+            <div class="recipes-header">
+                <h2>My Recipes</h2>
+                <div class="filter-tabs">
+                    <div class="filter-tab active">All</div>
+                    <div class="filter-tab">Breakfast</div>
+                    <div class="filter-tab">Lunch</div>
+                    <div class="filter-tab">Dinner</div>
+                    <div class="filter-tab">Snacks</div>
+                </div>
+            </div>
+
+            <div class="recipe-list-item" onclick="switchScreen('screen-recipe')">
+                <div class="list-thumb">🍗</div>
+                <div class="list-info">
+                    <h4>Hyderabadi Chicken Biryani</h4>
+                    <div class="meta"><i class="fas fa-clock"></i> 45 min</div>
+                    <div class="list-tags"><span class="list-tag">Non-Veg</span><span class="list-tag">Dinner</span></div>
+                </div>
+            </div>
+
+            <div class="recipe-list-item" onclick="switchScreen('screen-recipe')">
+                <div class="list-thumb">🍛</div>
+                <div class="list-info">
+                    <h4>Paneer Butter Masala</h4>
+                    <div class="meta"><i class="fas fa-clock"></i> 30 min</div>
+                    <div class="list-tags"><span class="list-tag veg">Veg</span><span class="list-tag">Lunch</span></div>
+                </div>
+            </div>
+
+            <div class="recipe-list-item" onclick="switchScreen('screen-recipe')">
+                <div class="list-thumb">🥘</div>
+                <div class="list-info">
+                    <h4>Dal Tadka</h4>
+                    <div class="meta"><i class="fas fa-clock"></i> 25 min</div>
+                    <div class="list-tags"><span class="list-tag veg">Veg</span><span class="list-tag">Dinner</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 7: Profile -->
+        <div class="screen" id="screen-profile">
+            <div class="header-bar">
+                <div class="hamburger-btn" onclick="toggleDrawer()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="header-title">Profile</div>
+            </div>
+
+            <div class="profile-cover"></div>
+            <div class="profile-info">
+                <div class="profile-avatar">👨‍🍳</div>
+                <h2>Rajesh Kumar</h2>
+                <p>rajesh.kumar@email.com</p>
+
+                <div class="profile-stats">
+                    <div class="profile-stat"><div class="value">24</div><div class="label">Recipes</div></div>
+                    <div class="profile-stat"><div class="value">156</div><div class="label">Cooked</div></div>
+                    <div class="profile-stat"><div class="value">45h</div><div class="label">Time</div></div>
+                </div>
+            </div>
+
+            <div class="profile-menu">
+                <div class="profile-menu-item" onclick="showPrefModal('preferences')">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Preferences</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="profile-menu-item" onclick="showPrefModal('dietary')">
+                    <i class="fas fa-leaf"></i>
+                    <span>Dietary Preferences</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="profile-menu-item" onclick="showPrefModal('notifications')">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="profile-menu-item" onclick="showPrefModal('language')">
+                    <i class="fas fa-globe"></i>
+                    <span>Language</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="profile-menu-item" onclick="showPrefModal('help')">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help & Support</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+                <div class="profile-menu-item" onclick="showPrefModal('about')">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About App</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchScreen('screen-home')">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" onclick="switchScreen('screen-recipes')">
+                <i class="fas fa-book"></i>
+                <span>My Recipes</span>
+            </div>
+            <div class="nav-item" onclick="switchScreen('screen-pantry')">
+                <i class="fas fa-carrot"></i>
+                <span>Pantry</span>
+            </div>
+            <div class="nav-item" onclick="switchScreen('screen-timers')">
+                <i class="fas fa-stopwatch"></i>
+                <span>Timers</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Drawer Overlay -->
+    <div class="side-drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
+
+    <!-- Side Drawer -->
+    <div class="side-drawer" id="side-drawer">
+        <button class="drawer-close" onclick="toggleDrawer()"><i class="fas fa-times"></i></button>
+        <div class="drawer-header">
+            <h2>Smart Cooking 🍳</h2>
+            <p>Your kitchen assistant</p>
+        </div>
+        <div class="drawer-menu">
+            <div class="drawer-section-title">Main Menu</div>
+            <div class="drawer-item active" onclick="switchScreen('screen-home'); toggleDrawer();">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </div>
+            <div class="drawer-item" onclick="switchScreen('screen-recipes'); toggleDrawer();">
+                <i class="fas fa-book"></i>
+                <span>My Recipes</span>
+            </div>
+            <div class="drawer-item" onclick="switchScreen('screen-pantry'); toggleDrawer();">
+                <i class="fas fa-carrot"></i>
+                <span>Pantry</span>
+            </div>
+            <div class="drawer-item" onclick="switchScreen('screen-timers'); toggleDrawer();">
+                <i class="fas fa-stopwatch"></i>
+                <span>Timers</span>
+            </div>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Settings</div>
+            <div class="drawer-item" onclick="showPrefModal('preferences'); toggleDrawer();">
+                <i class="fas fa-sliders-h"></i>
+                <span>Preferences</span>
+            </div>
+            <div class="drawer-item" onclick="showPrefModal('dietary'); toggleDrawer();">
+                <i class="fas fa-leaf"></i>
+                <span>Dietary Preferences</span>
+            </div>
+            <div class="drawer-item" onclick="showPrefModal('notifications'); toggleDrawer();">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </div>
+            <div class="drawer-item" onclick="showPrefModal('language'); toggleDrawer();">
+                <i class="fas fa-globe"></i>
+                <span>Language</span>
+            </div>
+
+            <div class="drawer-divider"></div>
+            <div class="drawer-section-title">Support</div>
+            <div class="drawer-item" onclick="showPrefModal('help'); toggleDrawer();">
+                <i class="fas fa-question-circle"></i>
+                <span>Help & Support</span>
+            </div>
+            <div class="drawer-item" onclick="showPrefModal('about'); toggleDrawer();">
+                <i class="fas fa-info-circle"></i>
+                <span>About App</span>
+            </div>
+            <div class="drawer-item" onclick="switchScreen('screen-profile'); toggleDrawer();">
+                <i class="fas fa-user"></i>
+                <span>My Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preference Modal -->
+    <div class="pref-modal" id="pref-modal">
+        <div class="pref-modal-header">
+            <h3 id="pref-modal-title">Preferences</h3>
+            <button class="close-btn" onclick="closePrefModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="pref-modal-body" id="pref-modal-body"></div>
+    </div>
+
+    <script>
+        // Side Drawer Toggle
+        function toggleDrawer() {
+            document.getElementById('side-drawer').classList.toggle('active');
+            document.getElementById('drawer-overlay').classList.toggle('active');
+        }
+
+        // Screen Switcher
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            // Update bottom nav
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const navMap = {
+                'screen-home': 0,
+                'screen-pantry': 1,
+                'screen-timers': 2,
+                'screen-profile': 3
+            };
+            if (navMap[screenId] !== undefined) {
+                document.querySelectorAll('.nav-item')[navMap[screenId]].classList.add('active');
+            }
+
+            // Update drawer active state
+            document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
+            const drawerMap = {
+                'screen-home': 0,
+                'screen-recipes': 1,
+                'screen-pantry': 2,
+                'screen-timers': 3,
+                'screen-profile': 9
+            };
+            if (drawerMap[screenId] !== undefined) {
+                document.querySelectorAll('.drawer-item')[drawerMap[screenId]]?.classList.add('active');
+            }
+        }
+
+        // Preference Modal
+        function showPrefModal(type) {
+            const title = document.getElementById('pref-modal-title');
+            const body = document.getElementById('pref-modal-body');
+            
+            const content = {
+                'preferences': {
+                    title: 'Preferences',
+                    body: `<div class="pref-section">
+                        <h4>Display</h4>
+                        <div class="pref-option"><span>Dark Mode</span><div class="toggle-switch active" onclick="this.classList.toggle('active');"></div></div>
+                        <div class="pref-option"><span>Large Text</span><div class="toggle-switch" onclick="this.classList.toggle('active');"></div></div>
+                    </div>
+                    <div class="pref-section">
+                        <h4>Voice</h4>
+                        <div class="pref-option"><span>Wake Word</span><span style="color:#666;font-size:12px;">Hey Chef</span></div>
+                        <div class="pref-option"><span>Speech Rate</span><select class="pref-select"><option>0.75x</option><option selected>1x</option><option>1.25x</option></select></div>
+                    </div>`
+                },
+                'dietary': {
+                    title: 'Dietary Preferences',
+                    body: `<div class="pref-section">
+                        <h4>Diet Type</h4>
+                        <div class="dietary-chips">
+                            <div class="dietary-chip active" data-lang="en">Vegetarian</div>
+                            <div class="dietary-chip" data-lang="hi">Non-Veg</div>
+                            <div class="dietary-chip">Vegan</div>
+                            <div class="dietary-chip">Jain</div>
+                        </div>
+                    </div>
+                    <div class="pref-section">
+                        <h4>Spice Level</h4>
+                        <div class="dietary-chips">
+                            <div class="dietary-chip">Mild</div>
+                            <div class="dietary-chip active" data-lang="en">Medium</div>
+                            <div class="dietary-chip" data-lang="hi">Spicy</div>
+                        </div>
+                    </div>`
+                },
+                'notifications': {
+                    title: 'Notifications',
+                    body: `<div class="pref-section">
+                        <h4>Alerts</h4>
+                        <div class="pref-option"><span>Timer Alerts</span><div class="toggle-switch active" onclick="this.classList.toggle('active');"></div></div>
+                        <div class="pref-option"><span>Step Reminders</span><div class="toggle-switch active" onclick="this.classList.toggle('active');"></div></div>
+                        <div class="pref-option"><span>Voice Guidance</span><div class="toggle-switch active" onclick="this.classList.toggle('active');"></div></div>
+                    </div>`
+                },
+                'language': {
+                    title: 'Language',
+                    body: `<div class="pref-section">
+                        <h4>App Language</h4>
+                        <div class="dietary-chips" id="app-lang-chips">
+                            <div class="dietary-chip active" data-lang="en">English</div>
+                            <div class="dietary-chip" data-lang="hi">हिंदी</div>
+                        </div>
+                    </div>
+                    <div class="pref-section">
+                        <h4>Voice Language</h4>
+                        <div class="dietary-chips" id="voice-lang-chips">
+                            <div class="dietary-chip active" data-voice="en">English</div>
+                            <div class="dietary-chip" data-voice="hi">हिंदी</div>
+                        </div>
+                    </div>`
+                },
+                'help': {
+                    title: 'Help & Support',
+                    body: `<div class="pref-section">
+                        <h4>Voice Commands</h4>
+                        <p style="font-size:13px; color:#888; line-height:1.6; margin-bottom:12px;">"Hey Chef" - Wake word<br>"Next step" - Go to next step<br>"Repeat" - Repeat current step<br>"How much salt?" - Ask about ingredients<br>"Set timer 10 minutes" - Set a timer</p>
+                        <h4>Contact Support</h4>
+                        <p style="font-size:13px; color:#888;">Email: support@smartcooking.app<br>WhatsApp: +91 98765 43210</p>
+                    </div>`
+                },
+                'about': {
+                    title: 'About App',
+                    body: `<div class="pref-section">
+                        <p style="font-size:14px; color:#fff; margin-bottom:12px;">Smart Cooking Assistant</p>
+                        <p style="font-size:13px; color:#888; line-height:1.6;">Version 2.1.0<br><br>Your hands-free cooking companion for Indian kitchens.<br><br>Made with ❤️ in India</p>
+                    </div>`
+                }
+            };
+            
+            title.textContent = content[type]?.title || 'Settings';
+            body.innerHTML = content[type]?.body || '';
+            document.getElementById('pref-modal').classList.add('active');
+        }
+
+        function closePrefModal() {
+            document.getElementById('pref-modal').classList.remove('active');
+        }
+
+        // Tab clicks
+        document.querySelectorAll('.category-tab, .filter-tab, .portion-btn').forEach(tab => {
+            tab.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.category-tab, .filter-tab, .portion-btn').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Dietary chips - event delegation for dynamically loaded modal content
+        document.addEventListener('click', function(e) {
+            const chip = e.target.closest('.dietary-chip');
+            if (chip) {
+                chip.parentElement.querySelectorAll('.dietary-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            }
+        });
+
+        // Wake button handler
+        function wakeChef() {
+            alert('Voice assistant activated! (Feature coming soon)');
+        }
+
+        // URL submit handler
+        function submitUrl() {
+            const input = document.querySelector('.url-input');
+            const url = input.value.trim();
+            if (url) {
+                alert('Processing: ' + url + '\n(Recipe extraction coming soon)');
+                input.value = '';
+            } else {
+                alert('Please paste a YouTube recipe URL');
+            }
+        }
+
+        // Clipboard paste handler
+        document.querySelector('.url-input').addEventListener('paste', function(e) {
+            setTimeout(() => {
+                if (this.value.includes('youtube.com') || this.value.includes('youtu.be')) {
+                    this.style.borderColor = 'var(--primary)';
+                }
+            }, 100);
+        });
+
+        // Logout button
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to sign out?')) {
+                    alert('Signed out successfully!');
+                    switchScreen('screen-home');
+                }
+            });
+        }
+
+        // Tab clicks
+        document.querySelectorAll('.category-tab, .filter-tab, .portion-btn').forEach(tab => {
+            tab.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.category-tab, .filter-tab, .portion-btn').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Dietary chip clicks
+        document.querySelectorAll('.dietary-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.dietary-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Close modal on overlay click
+        document.getElementById('pref-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePrefModal();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "SmartCookingApp",
+    "slug": "SmartCookingApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#121212"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.loki94in.cookwithai",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone to listen for cooking commands.",
+        "NSSpeechRecognitionUsageDescription": "This app needs access to speech recognition to understand your commands."
+      }
+    },
+    "android": {
+      "package": "com.loki94in.cookwithai",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#121212"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-speech-recognition"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "221c7acf-7d2d-44c1-92e3-2140e212772b"
+      }
+    }
+  }
+}
