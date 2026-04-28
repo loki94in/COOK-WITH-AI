@@ -34,17 +34,35 @@ export const startListening = async (onCommandCallback) => {
       return;
     }
 
+    // Fuzzy Matching Configuration
+    const commandAliases = {
+      next: ['next', 'forward', 'continue', 'next step', 'go on', 'proceed'],
+      previous: ['back', 'previous', 'go back', 'previous step', 'reverse'],
+      repeat: ['repeat', 'say again', 'what was that', 'pardon', 'repeat that', 'again'],
+      stop: ['stop', 'exit', 'quit', 'cancel', 'done', 'finish'],
+      salt: ['salt', 'too much salt', 'salty', 'ruined']
+    };
+
     ExpoSpeechRecognition.addListener('result', (event) => {
-      const transcript = event.results[0].transcript.toLowerCase();
+      const transcript = event.results[0].transcript.toLowerCase().trim();
       console.log('Recognized:', transcript);
 
-      // Simple keyword matching for hands-free control
-      if (transcript.includes('next') || transcript.includes('forward')) {
-        onCommandCallback('next');
-      } else if (transcript.includes('back') || transcript.includes('previous')) {
-        onCommandCallback('previous');
-      } else if (transcript.includes('repeat')) {
-        onCommandCallback('repeat');
+      let matchedCommand = null;
+      
+      // 1. Exact or partial match check against aliases
+      for (const [cmd, aliases] of Object.entries(commandAliases)) {
+        if (aliases.some(alias => transcript.includes(alias) || alias.includes(transcript))) {
+          matchedCommand = cmd;
+          break;
+        }
+      }
+
+      // 2. Execute command if found
+      if (matchedCommand) {
+        console.log(`Matched Voice Command: [${matchedCommand}] from transcript: "${transcript}"`);
+        onCommandCallback(matchedCommand);
+      } else {
+        console.log(`No command matched for transcript: "${transcript}"`);
       }
     });
 
