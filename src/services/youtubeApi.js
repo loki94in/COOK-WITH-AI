@@ -4,9 +4,12 @@
  */
 
 // Connects to our new local backend running on port 5000
-const CLOUD_EXTRACTOR_URL = 'http://localhost:5000/v1/extract';
+const CLOUD_EXTRACTOR_URL = 'http://192.168.31.156:5000/v1/extract';
 
 export const extractRecipeFromUrl = async (url) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for AI extraction
+
   try {
     console.log(`Sending URL to Local Backend Extractor: ${url}`);
 
@@ -14,9 +17,10 @@ export const extractRecipeFromUrl = async (url) => {
       method: 'POST',
       body: JSON.stringify({ url }),
       headers: { 'Content-Type': 'application/json' },
-      // Short timeout so UI doesn't hang forever if the backend is down
-      signal: AbortSignal.timeout(5000) 
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const { data } = await response.json();
@@ -26,7 +30,11 @@ export const extractRecipeFromUrl = async (url) => {
       throw new Error(`Backend API returned status code ${response.status}`);
     }
   } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('AI extraction timed out. Gemini might be slow or the video is too long.');
+    }
     console.error('Extraction completely failed:', error);
-    throw new Error('Backend server is offline or unreachable. Please run "npm start" in the backend folder.');
+    throw new Error('Backend server is offline or unreachable. Ensure the server is running at http://192.168.31.156:5000');
   }
 };

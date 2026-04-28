@@ -13,14 +13,15 @@ export default function HomeScreen({ setCurrentScreen }) {
   const setActiveRecipe = useStore(state => state.setActiveRecipe);
 
   const handleExtract = async () => {
-    if (!url.trim() || !url.includes('youtube.com')) {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl || (!trimmedUrl.includes('youtube.com') && !trimmedUrl.includes('youtu.be'))) {
       Alert.alert('Invalid URL', 'Please paste a valid YouTube recipe link.');
       return;
     }
 
     setLoading(true);
     try {
-      const recipe = await extractRecipeFromUrl(url.trim());
+      const recipe = await extractRecipeFromUrl(trimmedUrl);
       const pantryStock = getPantry();
       
       const { missing } = matchIngredientsWithPantry(recipe.ingredients || [], pantryStock);

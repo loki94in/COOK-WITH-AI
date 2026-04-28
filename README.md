@@ -32,6 +32,22 @@ npm start
 
 ---
 
+## 🛠️ Environment Troubleshooting
+
+### Android SDK Issue
+If you see `Failed to resolve the Android SDK path`, you need to set your `ANDROID_HOME` environment variable:
+1. Open **Environment Variables** in Windows.
+2. Add a new User variable:
+   - **Variable name:** `ANDROID_HOME`
+   - **Variable value:** `C:\Users\ratna\AppData\Local\Android\Sdk` (or your actual SDK path)
+3. Add `%ANDROID_HOME%\platform-tools` to your **Path** variable.
+
+### Web Support
+If Expo complains about missing web dependencies, run:
+`npx expo install react-dom react-native-web`
+
+---
+
 ## 📋 Feature Checklist
 - [x] **Voice Control ("Hey Chef")**: Safely listens for commands without picking up background noise.
 - [x] **Pantry Intelligence**: Cross-references required ingredients with local inventory using Levenshtein distance.

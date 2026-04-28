@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { YoutubeTranscript } = require('youtube-transcript');
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,7 +11,12 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
+
+// Root route for health check
+app.get('/', (req, res) => {
+  res.json({ message: "🍳 Cooking Assistant AI Backend is ONLINE", status: "ready" });
+});
 
 // Extraction endpoint
 app.post('/v1/extract', async (req, res) => {
@@ -81,6 +86,17 @@ ${fullText}
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Smart Cooking Assistant API is running on http://localhost:${PORT}`);
+// Root route for network health check
+app.get('/', (req, res) => {
+  res.json({ 
+    message: "🍳 Cooking Assistant AI Backend is ONLINE", 
+    ip: "192.168.31.156",
+    status: "ready" 
+  });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Smart Cooking Assistant API is online!`);
+  console.log(`🏠 Internal: http://localhost:${PORT}`);
+  console.log(`📱 External: http://192.168.31.156:${PORT}`);
 });

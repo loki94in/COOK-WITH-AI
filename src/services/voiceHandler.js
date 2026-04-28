@@ -1,5 +1,14 @@
 import * as Speech from 'expo-speech';
-import { ExpoSpeechRecognition } from 'expo-speech-recognition';
+import Toast from 'react-native-toast-message';
+
+// Safely attempt to import the native module
+let ExpoSpeechRecognition = null;
+try {
+  const Module = require('expo-speech-recognition');
+  ExpoSpeechRecognition = Module.ExpoSpeechRecognition;
+} catch (e) {
+  console.warn('ExpoSpeechRecognition native module is not available in this environment (Expo Go).');
+}
 
 /**
  * VOICE SERVICE
@@ -22,11 +31,20 @@ export const stopSpeaking = () => {
 
 // --- Speech-to-Text (STT) ---
 
-/**
- * Starts continuous listening for commands.
- * @param {Function} onCommandCallback - Called when a keyword is detected.
- */
 export const startListening = async (onCommandCallback) => {
+  // SAFETY CHECK: expo-speech-recognition requires a Development Build.
+  // It will not work in the standard Expo Go app.
+  if (!ExpoSpeechRecognition) {
+    console.warn('ExpoSpeechRecognition native module not found. Are you using Expo Go?');
+    Toast.show({
+      type: 'error',
+      text1: 'Voice Restricted',
+      text2: 'STT requires a Development Build (npx expo run:ios)',
+      visibilityTime: 6000
+    });
+    return;
+  }
+
   try {
     const result = await ExpoSpeechRecognition.requestPermissionsAsync();
     if (!result.granted) {
@@ -105,6 +123,8 @@ export const startListening = async (onCommandCallback) => {
 };
 
 export const stopListening = async () => {
+  if (!ExpoSpeechRecognition) return;
+
   try {
     await ExpoSpeechRecognition.stopAsync();
     ExpoSpeechRecognition.removeAllListeners('result');
