@@ -35,21 +35,25 @@ export const useCooking = (onCommandCallback) => {
     };
   }, [activeRecipe]);
 
-  // Logic to handle voice commands (Mock implementation)
+  // Logic to handle voice commands
   const handleVoiceCommand = (command) => {
     try {
       const cmd = command.toLowerCase();
       
       if (cmd.includes('next')) {
-        nextStep();
+        useStore.getState().nextStep();
       } else if (cmd.includes('previous') || cmd.includes('back')) {
-        prevStep();
+        useStore.getState().prevStep();
       } else if (cmd.includes('repeat')) {
-        speakInstruction(currentStep?.instruction);
+        // Must read from getState() to avoid stale closures, since this callback 
+        // is registered once when activeRecipe is set.
+        const state = useStore.getState();
+        const latestStep = state.activeRecipe?.steps[state.currentStepIndex];
+        if (latestStep) speakInstruction(latestStep.instruction);
       } else if (cmd.includes('salt')) {
         onCommandCallback('salt_error');
       } else if (cmd.includes('exit') || cmd.includes('stop')) {
-        exitCooking();
+        useStore.getState().exitCooking();
       } else {
         console.log('Command not recognized:', command);
       }

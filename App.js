@@ -21,56 +21,50 @@ export default function App() {
     initDatabase();
   }, []);
 
-  if (currentScreen === 'pantry') {
-    return (
-      <>
-        <PantryScreen onBack={() => setCurrentScreen('home')} />
-        <Toast />
-      </>
-    );
-  }
+  const renderScreen = () => {
+    if (currentScreen === 'pantry') {
+      return <PantryScreen onBack={() => setCurrentScreen('home')} />;
+    }
 
-  if (currentScreen === 'nutrition') {
-    return (
-      <>
-        <NutritionScreen onBack={() => setCurrentScreen('home')} />
-        <Toast />
-      </>
-    );
-  }
+    if (currentScreen === 'nutrition') {
+      return <NutritionScreen onBack={() => setCurrentScreen('home')} />;
+    }
 
-  if (currentScreen === 'timers') {
-    return (
-      <>
-        <TimersScreen onBack={() => setCurrentScreen('home')} />
-        <Toast />
-      </>
-    );
-  }
+    if (currentScreen === 'timers') {
+      return <TimersScreen onBack={() => setCurrentScreen('home')} />;
+    }
 
-  if (currentScreen === 'emergency') {
-    return (
-      <>
+    if (currentScreen === 'emergency') {
+      return (
         <EmergencyFixScreen 
           mistakeType={mistakeType} 
-          onBack={() => setCurrentScreen('home')} 
+          onBack={() => {
+            setCurrentScreen('home');
+            setMistakeType(null); 
+          }} 
         />
-        <Toast />
-      </>
-    );
-  }
+      );
+    }
 
-  if (!isCooking) {
-    return <HomeScreen setCurrentScreen={setCurrentScreen} />;
-  }
+    if (!isCooking) {
+      return <HomeScreen setCurrentScreen={setCurrentScreen} />;
+    }
+
+    return (
+      <CookingModeScreen 
+        onMistake={(type) => {
+          setMistakeType(type);
+          setCurrentScreen('emergency');
+        }} 
+      />
+    );
+  };
 
   return (
-    <CookingModeScreen 
-      onMistake={(type) => {
-        setMistakeType(type);
-        setCurrentScreen('emergency');
-      }} 
-    />
+    <>
+      {renderScreen()}
+      <Toast />
+    </>
   );
 }
 

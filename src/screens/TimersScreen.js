@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
 import { COLORS, SPACING, COMMON_STYLES } from '../theme';
+import { useStore } from '../store/useStore';
 
 export default function TimersScreen({ onBack }) {
-  const [timers, setTimers] = useState([
-    { id: '1', name: 'Rice Soaking', duration: 1800, remaining: 1800, isRunning: false },
-    { id: '2', name: 'Oven Preheat', duration: 600, remaining: 245, isRunning: true },
-  ]);
+  const activeRecipe = useStore(state => state.activeRecipe);
+  const [timers, setTimers] = useState([]);
+
+  // Load timers from recipe on mount
+  useEffect(() => {
+    if (activeRecipe && activeRecipe.steps) {
+      const recipeTimers = activeRecipe.steps
+        .filter(step => step.timer && step.timer > 0)
+        .map((step, idx) => ({
+          id: `step-${idx}`,
+          name: `Step ${idx + 1} Timer`,
+          duration: step.timer,
+          remaining: step.timer,
+          isRunning: false
+        }));
+      setTimers(recipeTimers);
+    }
+  }, [activeRecipe]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,6 +56,22 @@ export default function TimersScreen({ onBack }) {
           <Text style={styles.addBtn}>+ NEW</Text>
         </TouchableOpacity>
       </View>
+
+      {!activeRecipe && (
+        <View style={{ padding: SPACING.xl, alignItems: 'center' }}>
+          <Text style={{ color: COLORS.textSecondary, textAlign: 'center' }}>
+            No active recipe. Timers will appear here automatically when you start cooking!
+          </Text>
+        </View>
+      )}
+
+      {activeRecipe && timers.length === 0 && (
+        <View style={{ padding: SPACING.xl, alignItems: 'center' }}>
+          <Text style={{ color: COLORS.textSecondary, textAlign: 'center' }}>
+            This recipe has no step-by-step timers.
+          </Text>
+        </View>
+      )}
 
       <FlatList
         data={timers}

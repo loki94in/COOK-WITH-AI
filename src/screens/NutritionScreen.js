@@ -1,15 +1,20 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { COLORS, SPACING, COMMON_STYLES } from '../theme';
+import { useStore } from '../store/useStore';
 
 export default function NutritionScreen({ onBack }) {
-  // Mock data for demo
-  const dailyCalories = 1750;
+  const activeRecipe = useStore(state => state.activeRecipe);
+
+  // Dynamic values or safe fallbacks
+  const recipeTitle = activeRecipe ? activeRecipe.title : "No Active Recipe";
+  const dailyCalories = activeRecipe ? (activeRecipe.servings * 450) : 0; // Fake calc for demo
   const calorieGoal = 2000;
+  
   const macros = [
-    { label: 'Protein', value: '65g', percent: 32, color: COLORS.success },
-    { label: 'Carbs', value: '210g', percent: 52, color: COLORS.primary },
-    { label: 'Fat', value: '45g', percent: 16, color: COLORS.error },
+    { label: 'Protein', value: activeRecipe ? '65g' : '0g', percent: activeRecipe ? 32 : 0, color: COLORS.success },
+    { label: 'Carbs', value: activeRecipe ? '210g' : '0g', percent: activeRecipe ? 52 : 0, color: COLORS.primary },
+    { label: 'Fat', value: activeRecipe ? '45g' : '0g', percent: activeRecipe ? 16 : 0, color: COLORS.error },
   ];
 
   return (
@@ -23,12 +28,30 @@ export default function NutritionScreen({ onBack }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        
+        {!activeRecipe && (
+          <View style={[styles.card, COMMON_STYLES.card, { backgroundColor: 'rgba(255, 111, 0, 0.1)', borderColor: COLORS.primary, borderWidth: 1 }]}>
+            <Text style={{color: COLORS.primary, textAlign: 'center', fontWeight: 'bold'}}>
+              Start extracting a recipe to see its nutritional impact!
+            </Text>
+          </View>
+        )}
+
+        {activeRecipe && (
+           <View style={[styles.card, COMMON_STYLES.card, { marginBottom: 10 }]}>
+             <Text style={styles.cardTitle}>CURRENT RECIPE</Text>
+             <Text style={{color: COLORS.text, fontSize: 18, fontWeight: 'bold', marginTop: 5, textAlign: 'center'}}>
+               {recipeTitle}
+             </Text>
+           </View>
+        )}
+
         <View style={[styles.card, COMMON_STYLES.card]}>
-          <Text style={styles.cardTitle}>Daily Calories</Text>
+          <Text style={styles.cardTitle}>Estimated Calories</Text>
           <Text style={styles.calorieVal}>{dailyCalories.toLocaleString()}</Text>
-          <Text style={styles.goalText}>Goal: {calorieGoal} kcal</Text>
+          <Text style={styles.goalText}>Daily Goal: {calorieGoal} kcal</Text>
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: `${(dailyCalories/calorieGoal)*100}%` }]} />
+            <View style={[styles.progressBar, { width: `${Math.min((dailyCalories/calorieGoal)*100, 100)}%` }]} />
           </View>
         </View>
 

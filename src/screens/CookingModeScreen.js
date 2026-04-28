@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar } from 'react-native';
 import { COLORS, SPACING } from '../theme';
-import Toast from 'react-native-toast-message';
 import { useStore } from '../store/useStore';
 import { useCooking } from '../hooks/useCooking';
 
@@ -75,7 +74,6 @@ export default function CookingModeScreen({ onMistake }) {
           </TouchableOpacity>
         </View>
       </View>
-      <Toast />
     </SafeAreaView>
   );
 }
