@@ -56,10 +56,17 @@ ${fullText}
 
     const response = await ai.getGenerativeModel({ model: "gemini-1.5-flash" }).generateContent(prompt);
     const result = await response.response;
-    let jsonString = result.text();
-    // Clean up markdown wrapping if Gemini added it
-    jsonString = jsonString.replace(/^```json/gi, '').replace(/^```/gi, '').replace(/```$/g, '').trim();
-
+    let text = result.text();
+    
+    // Improved JSON extraction: Find the first '{' and last '}'
+    const startIndex = text.indexOf('{');
+    const endIndex = text.lastIndexOf('}');
+    
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error("Gemini did not return a valid JSON object.");
+    }
+    
+    const jsonString = text.substring(startIndex, endIndex + 1);
     const recipeData = JSON.parse(jsonString);
 
     res.json({

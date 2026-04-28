@@ -34,6 +34,9 @@ export const startListening = async (onCommandCallback) => {
       return;
     }
 
+    // Clear any existing listeners to prevent duplication
+    ExpoSpeechRecognition.removeAllListeners('result');
+
     // Fuzzy Matching Configuration
     const commandAliases = {
       next: ['next', 'forward', 'continue', 'next step', 'go on', 'proceed'],

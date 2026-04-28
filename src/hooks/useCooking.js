@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { speakInstruction, stopSpeaking, startListening, stopListening } from '../services/voiceHandler';
 
@@ -16,6 +16,13 @@ export const useCooking = (onCommandCallback) => {
   } = useStore();
 
   const currentStep = activeRecipe?.steps[currentStepIndex];
+
+  const callbackRef = useRef(onCommandCallback);
+  
+  // Keep the callback ref updated
+  useEffect(() => {
+    callbackRef.current = onCommandCallback;
+  }, [onCommandCallback]);
 
   // Automatically speak the instruction when the step changes
   useEffect(() => {
@@ -51,7 +58,7 @@ export const useCooking = (onCommandCallback) => {
         const latestStep = state.activeRecipe?.steps[state.currentStepIndex];
         if (latestStep) speakInstruction(latestStep.instruction);
       } else if (cmd.includes('salt')) {
-        onCommandCallback('salt_error');
+        callbackRef.current?.('salt_error');
       } else if (cmd.includes('exit') || cmd.includes('stop')) {
         useStore.getState().exitCooking();
       } else {

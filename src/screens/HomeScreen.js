@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { COLORS, SPACING, COMMON_STYLES } from '../theme';
+import Toast from 'react-native-toast-message';
 import { useStore } from '../store/useStore';
 import { extractRecipeFromUrl } from '../services/youtubeApi';
 import { matchIngredientsWithPantry } from '../hooks/pantryLogic';
@@ -63,17 +64,18 @@ export default function HomeScreen({ setCurrentScreen }) {
         <Text style={styles.instructionText}>Paste Recipe URL</Text>
         
         <TextInput
-          style={styles.urlInput}
+          style={[styles.urlInput, loading && { opacity: 0.5 }]}
           placeholder="https://youtube.com/watch?v=..."
           placeholderTextColor="#666"
           value={url}
           onChangeText={setUrl}
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!loading}
         />
 
         <TouchableOpacity 
-          style={[styles.button, styles.primaryButton, { width: 200, marginTop: 20 }]} 
+          style={[styles.button, styles.primaryButton, { width: 200, marginTop: 20 }, loading && { opacity: 0.7 }]} 
           onPress={handleExtract}
           disabled={loading}
         >
@@ -81,22 +83,25 @@ export default function HomeScreen({ setCurrentScreen }) {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.button, { width: 200, marginTop: 20 }]} 
+          style={[styles.button, { width: 200, marginTop: 20 }, loading && { opacity: 0.5 }]} 
           onPress={() => setCurrentScreen('pantry')}
+          disabled={loading}
         >
           <Text style={styles.buttonText}>MANAGE PANTRY</Text>
         </TouchableOpacity>
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 20 }}>
           <TouchableOpacity 
-            style={[styles.button, { flex: 1 }]} 
+            style={[styles.button, { flex: 1 }, loading && { opacity: 0.5 }]} 
             onPress={() => setCurrentScreen('timers')}
+            disabled={loading}
           >
             <Text style={styles.buttonText}>TIMERS</Text>
           </TouchableOpacity>
           <TouchableOpacity 
-            style={[styles.button, { flex: 1 }]} 
+            style={[styles.button, { flex: 1 }, loading && { opacity: 0.5 }]} 
             onPress={() => setCurrentScreen('nutrition')}
+            disabled={loading}
           >
             <Text style={styles.buttonText}>NUTRITION</Text>
           </TouchableOpacity>
