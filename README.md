@@ -11,24 +11,13 @@ This project uses a split Client-Server architecture:
 
 ## 🛠️ How to Run the Project Locally
 
-Because the project now features a real backend API, you must run **both** the server and the mobile app simultaneously.
+You can now start both the **AI Backend** and the **Mobile App** with a single command from the root folder:
 
-### Step 1: Start the Backend Server
-Open a terminal and run the following commands:
 ```bash
-cd backend
-npm install
 npm run dev
 ```
-*The server will start on `http://localhost:5000`.*
 
-### Step 2: Start the Mobile App
-Open a **new, separate terminal window** and run:
-```bash
-npm install
-npm start
-```
-*Use the Expo Go app on your phone, or an Android/iOS emulator to open the app.*
+This will automatically launch the Gemini server and the Metro bundler at the same time. Once the QR code appears, scan it with your phone!
 
 ---
 

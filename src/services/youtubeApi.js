@@ -8,7 +8,7 @@ const CLOUD_EXTRACTOR_URL = 'http://192.168.31.156:5000/v1/extract';
 
 export const extractRecipeFromUrl = async (url) => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for AI extraction
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for AI extraction
 
   try {
     console.log(`Sending URL to Local Backend Extractor: ${url}`);
