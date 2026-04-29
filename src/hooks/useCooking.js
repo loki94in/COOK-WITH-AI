@@ -52,13 +52,13 @@ export const useCooking = (onCommandCallback) => {
       } else if (cmd.includes('previous') || cmd.includes('back')) {
         useStore.getState().prevStep();
       } else if (cmd.includes('repeat')) {
-        // Must read from getState() to avoid stale closures, since this callback 
-        // is registered once when activeRecipe is set.
         const state = useStore.getState();
         const latestStep = state.activeRecipe?.steps[state.currentStepIndex];
         if (latestStep) speakInstruction(latestStep.instruction);
       } else if (cmd.includes('salt')) {
-        callbackRef.current?.('salt_error');
+        callbackRef.current?.('too much salt');
+      } else if (cmd.includes('spicy') || cmd.includes('hot')) {
+        callbackRef.current?.('too spicy');
       } else if (cmd.includes('exit') || cmd.includes('stop')) {
         useStore.getState().exitCooking();
       } else {
@@ -68,6 +68,7 @@ export const useCooking = (onCommandCallback) => {
       console.error('Voice Command Error:', error);
     }
   };
+
 
   return {
     currentStep,
