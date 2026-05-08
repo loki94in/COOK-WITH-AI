@@ -85,17 +85,21 @@ function parseRecipeFromDescription(title, description, url) {
           subSteps.forEach(ss => {
               recipe.steps.push({
                 instruction: ss.trim(),
-                timer: extractTimer(ss)
+                timer: extractTimer(ss),
+                timestamp: extractVideoTimestamp(ss)
               });
           });
+
       } else {
         const cleanStep = line.replace(/^[\d\.\)\-\*\•\s]+/, '').trim();
         if (cleanStep.length > 5 && !cleanStep.includes('http')) {
           recipe.steps.push({
             instruction: cleanStep,
-            timer: extractTimer(cleanStep)
+            timer: extractTimer(cleanStep),
+            timestamp: extractVideoTimestamp(line) // Use original line for timestamp detection
           });
         }
+
       }
     }
   }
@@ -176,5 +180,17 @@ function extractTimer(text) {
   return 0;
 }
 
+function extractVideoTimestamp(text) {
+  // Matches patterns like [2:45], (03:20), 1:30 at start/end
+  const tsMatch = text.match(/(?:\[|\()?(\d{1,2}):(\d{2})(?:\]|\))?/);
+  if (tsMatch) {
+    const mins = parseInt(tsMatch[1]);
+    const secs = parseInt(tsMatch[2]);
+    return (mins * 60) + secs;
+  }
+  return null;
+}
+
 module.exports = { parseRecipeFromDescription };
+
 

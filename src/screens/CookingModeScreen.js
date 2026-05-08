@@ -1,27 +1,65 @@
-import React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar, ScrollView, Dimensions } from 'react-native';
+import YoutubePlayer from 'react-native-youtube-iframe';
 import { COLORS, SPACING } from '../theme';
 import { useStore } from '../store/useStore';
 import { useCooking } from '../hooks/useCooking';
+import { syncPantryAfterCooking } from '../services/pantrySync';
+import Toast from 'react-native-toast-message';
+
+const { width } = Dimensions.get('window');
 
 export default function CookingModeScreen({ onMistake, setCurrentScreen }) {
   const activeRecipe = useStore(state => state.activeRecipe);
   const exitCooking = useStore(state => state.exitCooking);
+  const playerRef = useRef(null);
+
+  const handleFinish = () => {
+    const success = syncPantryAfterCooking(activeRecipe?.ingredients || []);
+    if (success) {
+      Toast.show({
+        type: 'success',
+        text1: 'Cooking Complete! 🍳',
+        text2: 'Pantry inventory has been updated.',
+      });
+    }
+    exitCooking();
+    setCurrentScreen('home');
+  };
 
   const cookingData = useCooking((cmd) => {
-    if (cmd === 'salt_error') {
+    if (cmd === 'too much salt') {
       onMistake('too much salt');
+    } else if (cmd === 'too spicy') {
+      onMistake('too spicy');
+    } else if (cmd === 'finish') {
+      handleFinish();
     }
   });
-
   const { 
     currentStep, 
     stepNumber, 
     totalSteps, 
     handleVoiceCommand, 
     isFirstStep, 
-    isLastStep 
+    isLastStep,
+    currentTimestamp
   } = cookingData;
+
+  const stepsCount = totalSteps || 0;
+
+
+
+
+  // Extract Video ID
+  const videoId = activeRecipe?.source_url?.match(/(?:v=|\/)([0-9A-Za-z_-]{11}).*/)?.[1];
+
+  // Auto-seek when step changes
+  useEffect(() => {
+    if (currentTimestamp > 0 && playerRef.current) {
+      playerRef.current.seekTo(currentTimestamp, true);
+    }
+  }, [currentTimestamp]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,28 +75,55 @@ export default function CookingModeScreen({ onMistake, setCurrentScreen }) {
         <TouchableOpacity onPress={() => setCurrentScreen('nutrition')} style={styles.navLink}>
           <Text style={styles.navText}>NUTRITION</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => setCurrentScreen('home')} style={styles.navLink}>
+          <Text style={styles.navText}>EXIT</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.header}>
-        <Text style={styles.recipeTitle}>{activeRecipe?.title?.toUpperCase() || 'RECIPE'}</Text>
-        <Text style={styles.stepCounter}>STEP {stepNumber} OF {totalSteps}</Text>
+      <View style={styles.videoContainer}>
+        {videoId ? (
+          <YoutubePlayer
+            ref={playerRef}
+            height={(width * 9) / 16}
+            play={true}
+            videoId={videoId}
+            initialPlayerParams={{
+                controls: 1,
+                modestbranding: 1,
+                rel: 0
+            }}
+          />
+        ) : (
+          <View style={styles.noVideo}>
+            <Text style={styles.noVideoText}>Video Preview Unavailable</Text>
+          </View>
+        )}
       </View>
 
-      <View style={styles.mainContent}>
-        <Text style={styles.instructionText}>
-          "{currentStep?.instruction}"
-        </Text>
-        
-        <View style={styles.timerContainer}>
-          <Text style={styles.timerText}>{currentStep?.timer > 0 ? `${Math.floor(currentStep.timer / 60)}:00` : '--:--'}</Text>
-          <Text style={styles.timerLabel}>Remaining</Text>
+      <ScrollView style={styles.content}>
+        <View style={styles.header}>
+            <Text style={styles.recipeTitle}>{activeRecipe?.title?.toUpperCase() || 'RECIPE'}</Text>
+            <Text style={styles.stepCounter}>STEP {stepNumber} OF {totalSteps}</Text>
         </View>
-      </View>
+
+        <View style={styles.stepBox}>
+            <Text style={styles.instructionText}>
+                "{currentStep?.instruction}"
+            </Text>
+            
+            {currentStep?.timer > 0 && (
+                <View style={styles.miniTimer}>
+                    <Text style={styles.timerText}>{Math.floor(currentStep.timer / 60)}:00</Text>
+                    <Text style={styles.timerLabel}>Timer active</Text>
+                </View>
+            )}
+        </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         <View style={styles.voiceIndicator}>
           <View style={styles.micCircle}>
-            <Text style={{ fontSize: 24 }}>🎤</Text>
+            <Text style={{ fontSize: 20 }}>🎤</Text>
           </View>
           <Text style={styles.listeningText}>"Hey Chef" — Listening...</Text>
         </View>
@@ -71,18 +136,16 @@ export default function CookingModeScreen({ onMistake, setCurrentScreen }) {
           >
             <Text style={styles.buttonText}>PREVIOUS</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={() => handleVoiceCommand('stop')}>
-            <Text style={[styles.buttonText, { color: '#000' }]}>EXIT</Text>
-          </TouchableOpacity>
+          
           <TouchableOpacity style={[styles.button, { backgroundColor: '#F44336' }]} onPress={() => handleVoiceCommand('salt')}>
             <Text style={styles.buttonText}>SALT?</Text>
           </TouchableOpacity>
+
           <TouchableOpacity 
-            style={[styles.button, isLastStep && { opacity: 0.3 }]} 
-            onPress={() => handleVoiceCommand('next')}
-            disabled={isLastStep}
+            style={[styles.button, isLastStep ? styles.finishButton : styles.primaryButton]} 
+            onPress={() => isLastStep ? handleFinish() : handleVoiceCommand('next')}
           >
-            <Text style={styles.buttonText}>NEXT</Text>
+            <Text style={[styles.buttonText, { color: '#000' }]}>{isLastStep ? 'FINISH' : 'NEXT'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -98,7 +161,7 @@ const styles = StyleSheet.create({
   topNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.xs,
     backgroundColor: '#111',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
@@ -108,77 +171,92 @@ const styles = StyleSheet.create({
   },
   navText: {
     color: COLORS.primary,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  videoContainer: {
+    backgroundColor: '#000',
+    width: '100%',
+    aspectRatio: 16 / 9,
+  },
+  noVideo: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noVideoText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  content: {
+    flex: 1,
   },
   header: {
     padding: SPACING.md,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.card,
+    backgroundColor: 'rgba(255,255,255,0.03)',
   },
   recipeTitle: {
     color: COLORS.text,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     letterSpacing: 1,
+    textAlign: 'center',
   },
   stepCounter: {
     color: COLORS.textSecondary,
-    fontSize: 14,
-    marginTop: SPACING.xs,
+    fontSize: 12,
+    marginTop: 4,
   },
-  mainContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  stepBox: {
     padding: SPACING.lg,
+    alignItems: 'center',
   },
   instructionText: {
     color: COLORS.text,
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
-    lineHeight: 40,
+    lineHeight: 28,
   },
-  timerContainer: {
-    marginTop: SPACING.xl,
+  miniTimer: {
+    marginTop: SPACING.lg,
     alignItems: 'center',
     backgroundColor: COLORS.card,
-    padding: SPACING.lg,
-    borderRadius: 100,
-    width: 200,
-    height: 200,
-    justifyContent: 'center',
-    borderWidth: 2,
+    padding: SPACING.md,
+    borderRadius: 50,
+    borderWidth: 1,
     borderColor: COLORS.primary,
+    flexDirection: 'row',
+    gap: 10,
   },
   timerText: {
     color: COLORS.primary,
-    fontSize: 48,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   timerLabel: {
     color: COLORS.textSecondary,
-    fontSize: 12,
+    fontSize: 10,
     textTransform: 'uppercase',
   },
   footer: {
-    padding: SPACING.lg,
+    padding: SPACING.md,
+    backgroundColor: '#000',
   },
   voiceIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.card,
-    padding: SPACING.md,
+    padding: SPACING.sm,
     borderRadius: 50,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   micCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -186,27 +264,31 @@ const styles = StyleSheet.create({
   },
   listeningText: {
     color: COLORS.secondary,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 8,
   },
   button: {
     flex: 1,
     padding: SPACING.md,
     alignItems: 'center',
     backgroundColor: COLORS.card,
-    marginHorizontal: 4,
     borderRadius: 8,
   },
   primaryButton: {
     backgroundColor: COLORS.primary,
   },
+  finishButton: {
+    backgroundColor: '#4CAF50',
+  },
   buttonText: {
     color: COLORS.text,
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 11,
   },
 });
+

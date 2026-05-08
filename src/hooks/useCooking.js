@@ -15,7 +15,10 @@ export const useCooking = (onCommandCallback) => {
     exitCooking 
   } = useStore();
 
-  const currentStep = activeRecipe?.steps[currentStepIndex];
+  const currentStep = (activeRecipe && activeRecipe.steps && activeRecipe.steps.length > 0) 
+    ? activeRecipe.steps[currentStepIndex] 
+    : null;
+
 
   const callbackRef = useRef(onCommandCallback);
   
@@ -59,7 +62,10 @@ export const useCooking = (onCommandCallback) => {
         callbackRef.current?.('too much salt');
       } else if (cmd.includes('spicy') || cmd.includes('hot')) {
         callbackRef.current?.('too spicy');
+      } else if (cmd.includes('finish') || cmd.includes('complete')) {
+        callbackRef.current?.('finish');
       } else if (cmd.includes('exit') || cmd.includes('stop')) {
+
         useStore.getState().exitCooking();
       } else {
         console.log('Command not recognized:', command);
@@ -77,5 +83,7 @@ export const useCooking = (onCommandCallback) => {
     handleVoiceCommand,
     isFirstStep: currentStepIndex === 0,
     isLastStep: currentStepIndex === (activeRecipe?.steps.length || 0) - 1,
+    currentTimestamp: currentStep?.timestamp || 0
   };
+
 };
